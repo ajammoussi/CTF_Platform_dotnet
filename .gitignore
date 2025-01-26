@@ -1,0 +1,22 @@
+# Fichiers et dossiers générés par Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Dossiers de build
+bin/
+obj/
+
+# Fichiers de configuration
+appsettings.json
+appsettings.Development.json
+
+# Fichiers de logs
+*.log
+
+# Fichiers de base de données locale
+*.mdf
+*.ldf
+*.ndf

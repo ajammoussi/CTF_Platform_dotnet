@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:17
+    container_name: ctf_platform_db
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: ctf_platform
+    ports:
+      - "5433:5432"  # Map port 5433 on the host to port 5432 in the container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

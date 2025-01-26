@@ -1,0 +1,40 @@
+﻿using CTF_Platform_dotnet.Models.Enums;
+using System.ComponentModel.DataAnnotations;
+
+namespace CTF_Platform_dotnet.Models
+{
+    public class Challenge
+    {
+        [Key]
+        public int ChallengeId { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public CategoryEnum Category { get; set; }
+
+        [MaxLength(20)]
+        public DifficultyEnum Difficulty { get; set; }
+
+        [Required]
+        public int Points { get; set; }
+
+        [Required]
+        [MaxLength(255)]
+        public string Flag { get; set; }
+
+        [MaxLength(255)]
+        public string FilePath { get; set; }
+
+        public int CreatedByUserId { get; set; } // Should be a ChallengeCreator
+
+        // Navigation properties
+        public User CreatedByUser { get; set; } // Should be a ChallengeCreator
+        public ICollection<Submission> Submissions { get; set; }
+    }
+}
