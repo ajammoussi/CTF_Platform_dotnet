@@ -1,3 +1,4 @@
+using CTF_Platform_dotnet.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,9 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<CTFContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add services to the container.
+//register repository so it can be injected into controllers
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// Add services to the container.
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
