@@ -1,5 +1,6 @@
 using CTF_Platform_dotnet.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace CTF_Platform_dotnet.Models
@@ -30,11 +31,15 @@ namespace CTF_Platform_dotnet.Models
         [Required]
         public int Points { get; set; } = 0;
 
+        [Required]
+        public int TeamId { get; set; }
+
 
         // Navigation properties
-        public ICollection<TeamMember> TeamMembers { get; set; }
+        [ForeignKey(nameof(TeamId))]
+        public Team Team { get; set; }
         public ICollection<Submission> Submissions { get; set; }
-        public ICollection<Challenge> CreatedChallenges { get; set; }
         public ICollection<SupportTicket> SupportTickets { get; set; }
+
     }
 }

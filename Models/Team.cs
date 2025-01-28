@@ -22,7 +22,7 @@ namespace CTF_Platform_dotnet.Models
 
         // Navigation properties
         public User CreatedByUser { get; set; }
-        public ICollection<TeamMember> TeamMembers { get; set; } = new List<TeamMember>(); // Initialize here
-        public ICollection<Submission> Submissions { get; set; } = new List<Submission>(); // Optional: Initialize if needed
+        public ICollection<User> Users {get;set;} = new List<User>(); 
+        public ICollection<Submission> Submissions { get; set; } = new List<Submission>(); 
     }
 }

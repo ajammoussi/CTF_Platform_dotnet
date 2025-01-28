@@ -31,10 +31,7 @@ namespace CTF_Platform_dotnet.Models
         [MaxLength(255)]
         public string FilePath { get; set; }
 
-        public int CreatedByUserId { get; set; } // Should be a ChallengeCreator
-
         // Navigation properties
-        public User CreatedByUser { get; set; } // Should be a ChallengeCreator
         public ICollection<Submission> Submissions { get; set; }
     }
 }
