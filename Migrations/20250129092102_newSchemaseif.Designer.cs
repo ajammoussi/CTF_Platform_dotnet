@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CTF_Platform_dotnet.Migrations
 {
     [DbContext(typeof(CTFContext))]
-    partial class CTFContextModelSnapshot : ModelSnapshot
+    [Migration("20250129092102_newSchemaseif")]
+    partial class newSchemaseif
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +45,7 @@ namespace CTF_Platform_dotnet.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("FilePath")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -114,6 +118,7 @@ namespace CTF_Platform_dotnet.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsResolved")
@@ -190,7 +195,7 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("TeamId")
+                    b.Property<int>("TeamId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Username")
@@ -257,7 +262,9 @@ namespace CTF_Platform_dotnet.Migrations
                 {
                     b.HasOne("CTF_Platform_dotnet.Models.Team", "Team")
                         .WithMany("Users")
-                        .HasForeignKey("TeamId");
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Team");
                 });

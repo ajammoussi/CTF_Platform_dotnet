@@ -16,15 +16,15 @@ namespace CTF_Platform_dotnet.Models
 
         [Required]
         [MaxLength(255)]
-        public string SubmittedFlag { get; set; }
+        public required string SubmittedFlag { get; set; }
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
         public bool? IsCorrect { get; set; }
 
         // Navigation properties
-        public Challenge Challenge { get; set; }
-        public User User { get; set; }
-        public Team Team { get; set; }
+        public required Challenge Challenge { get; set; }
+        public User? User { get; set; }
+        public Team? Team { get; set; }
     }
 }

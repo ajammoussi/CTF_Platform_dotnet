@@ -10,9 +10,9 @@ namespace CTF_Platform_dotnet.Models
 
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public string Description { get; set; }
+        public required string Description { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -26,12 +26,12 @@ namespace CTF_Platform_dotnet.Models
 
         [Required]
         [MaxLength(255)]
-        public string Flag { get; set; }
+        public required string Flag { get; set; }
 
         [MaxLength(255)]
-        public string FilePath { get; set; }
+        public string? FilePath { get; set; }
 
         // Navigation properties
-        public ICollection<Submission> Submissions { get; set; }
+        public ICollection<Submission> Submissions { get; set; } = new List<Submission>();
     }
 }

@@ -12,7 +12,6 @@
                 var challenges = MockDataGenerator.GenerateChallenges(20, users); // 20 challenges
                 var submissions = MockDataGenerator.GenerateSubmissions(100, users, teams, challenges); // 100 submissions
                 var supportTickets = MockDataGenerator.GenerateSupportTickets(30, users); // 30 support tickets
-                var chatMessages = MockDataGenerator.GenerateChatMessages(100, supportTickets, users); // 100 chat messages
 
                 // Add data to the database
                 context.Users.AddRange(users);
@@ -20,7 +19,6 @@
                 context.Challenges.AddRange(challenges);
                 context.Submissions.AddRange(submissions);
                 context.SupportTickets.AddRange(supportTickets);
-                context.ChatMessages.AddRange(chatMessages);
 
                 // Save changes
                 context.SaveChanges();

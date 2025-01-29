@@ -22,31 +22,11 @@ public static class MockDataGenerator
     public static List<Team> GenerateTeams(int count, List<User> users)
     {
         var teamFaker = new Faker<Team>()
-            .RuleFor(t => t.TeamName, f => f.Company.CompanyName())
+            .RuleFor(t => t.TeamName, f => f.Hacker.Noun())
             .RuleFor(t => t.CreatedByUserId, f => f.PickRandom(users).UserId)
             .RuleFor(t => t.CreatedAt, f => f.Date.Past())
-            .RuleFor(t => t.TotalPoints, f => f.Random.Int(0, 5000));
-
-        var teams = teamFaker.Generate(count);
-
-        // Assign users to teams via TeamMember
-        var random = new Random();
-        foreach (var team in teams)
-        {
-            var teamMembers = users.OrderBy(u => random.Next()).Take(5).ToList(); // Assign 5 random users to each team
-            foreach (var user in teamMembers)
-            {
-                team.TeamMembers.Add(new TeamMember
-                {
-                    TeamId = team.TeamId,
-                    UserId = user.UserId,
-                    Team = team,
-                    User = user
-                });
-            }
-        }
-
-        return teams;
+            .RuleFor(t => t.TotalPoints, f => f.Random.Int(0, 1000));
+        return teamFaker.Generate(count);
     }
 
     // Generate mock challenges and link them to users (as creators)
@@ -59,8 +39,7 @@ public static class MockDataGenerator
             .RuleFor(c => c.Difficulty, f => f.PickRandom<DifficultyEnum>())
             .RuleFor(c => c.Points, f => f.Random.Int(100, 1000))
             .RuleFor(c => c.Flag, f => f.Random.String(32))
-            .RuleFor(c => c.FilePath, f => f.System.FilePath())
-            .RuleFor(c => c.CreatedByUserId, f => f.PickRandom(users).UserId);
+            .RuleFor(c => c.FilePath, f => f.System.FilePath());
 
         return challengeFaker.Generate(count);
     }
@@ -114,25 +93,6 @@ public static class MockDataGenerator
 
         return tickets;
     }
-
-    // Generate mock chat messages and link them to support tickets and users
-    public static List<ChatMessage> GenerateChatMessages(int count, List<SupportTicket> tickets, List<User> users)
-    {
-        var chatFaker = new Faker<ChatMessage>()
-            .RuleFor(cm => cm.Message, f => f.Lorem.Sentence())
-            .RuleFor(cm => cm.SentAt, f => f.Date.Past());
-
-        var chatMessages = chatFaker.Generate(count);
-
-        // Assign chat messages to tickets and users
-        var random = new Random();
-        foreach (var chatMessage in chatMessages)
-        {
-            chatMessage.TicketId = tickets[random.Next(tickets.Count)].TicketId;
-            chatMessage.SenderUserId = users[random.Next(users.Count)].UserId;
-        }
-
-        return chatMessages;
-    }
+    
 }
 
