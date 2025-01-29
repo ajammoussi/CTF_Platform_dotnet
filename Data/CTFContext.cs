@@ -7,11 +7,9 @@ public class CTFContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Team> Teams { get; set; }
-    public DbSet<TeamMember> TeamMembers { get; set; }
     public DbSet<Challenge> Challenges { get; set; }
     public DbSet<Submission> Submissions { get; set; }
     public DbSet<SupportTicket> SupportTickets { get; set; }
-    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,16 +17,15 @@ public class CTFContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+        modelBuilder.Entity<User>()
+            .HasOne(u=>u.Team)
+            .WithMany(t=>t.Users)
+            .HasForeignKey(u=>u.TeamId);
 
-        modelBuilder.Entity<TeamMember>()
-            .HasOne(tm => tm.Team)
-            .WithMany(t => t.TeamMembers)
-            .HasForeignKey(tm => tm.TeamId);
-
-        modelBuilder.Entity<TeamMember>()
-            .HasOne(tm => tm.User)
-            .WithMany(u => u.TeamMembers)
-            .HasForeignKey(tm => tm.UserId);
+        modelBuilder.Entity<Team>()
+            .HasOne(t=>t.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(t=>t.CreatedByUserId);
 
         modelBuilder.Entity<Submission>()
             .HasOne(s => s.Challenge)
@@ -49,16 +46,5 @@ public class CTFContext : DbContext
             .HasOne(st => st.User)
             .WithMany(u => u.SupportTickets)
             .HasForeignKey(st => st.UserId);
-
-        // Configure ChatMessage relationships
-        modelBuilder.Entity<ChatMessage>()
-            .HasOne(cm => cm.SupportTicket)
-            .WithMany(st => st.ChatMessages)
-            .HasForeignKey(cm => cm.TicketId);
-
-        modelBuilder.Entity<ChatMessage>()
-            .HasOne(cm => cm.SenderUser)
-            .WithMany()
-            .HasForeignKey(cm => cm.SenderUserId);
     }
 }

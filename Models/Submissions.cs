@@ -20,7 +20,7 @@ namespace CTF_Platform_dotnet.Models
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
-        public bool IsCorrect { get; set; }
+        public bool? IsCorrect { get; set; }
 
         // Navigation properties
         public Challenge Challenge { get; set; }
