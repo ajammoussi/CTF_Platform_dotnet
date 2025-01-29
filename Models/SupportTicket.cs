@@ -22,6 +22,5 @@ namespace CTF_Platform_dotnet.Models
 
         // Navigation properties
         public User User { get; set; }
-        public ICollection<ChatMessage> ChatMessages { get; set; } // Link to chat messages
     }
 }

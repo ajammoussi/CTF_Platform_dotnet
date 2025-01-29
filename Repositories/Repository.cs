@@ -15,7 +15,7 @@ public class Repository<T> : IRepository<T> where T : class
         _dbSet = _context.Set<T>();
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
+    public IQueryable<T> GetAll() => _dbSet.AsQueryable(); //more efficient than returning IEnumerable 
 
     public async Task<T> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
 
@@ -40,28 +40,29 @@ public class Repository<T> : IRepository<T> where T : class
             await _context.SaveChangesAsync();
         }
     }
-    public async Task<IEnumerable<T>> Where(Expression<Func<T, bool>> predicate)
+    public IQueryable<T> Where(Expression<Func<T, bool>> predicate)
     {
-        return await _dbSet.Where(predicate).ToListAsync();
+        return _dbSet.Where(predicate);
     }
-    public async Task<IEnumerable<T>> OrderBy<TKey>(
+    public IQueryable<T> OrderBy<TKey>(
     Expression<Func<T, TKey>> keySelector, bool ascending = true)
     {
-        if (ascending)
-        {
-            return await _dbSet.OrderBy(keySelector).ToListAsync();
-        }
-        else
-        {
-            return await _dbSet.OrderByDescending(keySelector).ToListAsync();
-        }
+        return ascending 
+            ? _dbSet.OrderBy(keySelector) 
+            : _dbSet.OrderByDescending(keySelector);
     }
-    public async Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize)
+
+    public async Task<PagedResponse<T>> GetPagedAsync(int pageNumber, int pageSize)
     {
-        return await _dbSet
+        if (pageNumber <= 0) throw new ArgumentException("Page number must be greater than 0.");
+        if (pageSize <= 0 || pageSize > 50) throw new ArgumentException("Page size must be between 1 and 50.");
+        var totalItems = await _dbSet.CountAsync();
+        var items = await _dbSet
+            .AsNoTracking()
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+        return new PagedResponse<T>(items, pageNumber, pageSize, totalItems);
     }
 
     public async Task<int> CountAsync (Expression<Func<T,bool>>? predicate = null)
