@@ -54,6 +54,22 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Add authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    // Policy for participants
+    options.AddPolicy("ParticipantOnly", policy =>
+        policy.RequireClaim("Role", "Participant"));
+
+    // Policy for admins
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim("Role", "Admin"));
+
+    // Policy for challenge creators
+    options.AddPolicy("ChallengeCreatorOnly", policy =>
+        policy.RequireClaim("Role", "ChallengeCreator"));
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

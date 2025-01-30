@@ -22,18 +22,18 @@ namespace CTF_Platform_dotnet.Controllers
             return Ok(user);
         }
 
-        //[Authorize(Roles = nameof(RoleEnum.Admin))]
-        //[HttpGet("getadmin")]
-        //public IActionResult GetAdmin()
-        //{
-        //    return Ok(new { Message = "This is an admin-only endpoint" });
-        //}
+        [Authorize(Policy = "AdminOnly")]
+        [HttpGet("getadmin")]
+        public IActionResult GetAdmin()
+        {
+            return Ok(new { Message = "This is an admin-only endpoint" });
+        }
 
-        //[Authorize(Roles = nameof(RoleEnum.Participant))]
-        //[HttpGet("getuser")]
-        //public IActionResult GetParticipant()
-        //{
-        //    return Ok(new { Message = "This is a participant-only endpoint" });
-        //}
+        [Authorize(Policy = "ParticipantOnly")]
+        [HttpGet("getparticipant")]
+        public IActionResult GetParticipant()
+        {
+            return Ok(new { Message = "This is a participant-only endpoint" });
+        }
     }
 }

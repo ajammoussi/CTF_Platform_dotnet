@@ -59,16 +59,26 @@ namespace CTF_Platform_dotnet.Controllers
         {
             // hash the password of the dto with bcrypt
            
-            var dtoPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            var user = (await _userService.GetUsersByPredicateAsync(u => u.Username == dto.Username && u.PasswordHash == dtoPasswordHash)).FirstOrDefault();
-            Console.WriteLine(user == null);
+            var userByUsername = (await _userService.GetUsersByPredicateAsync(u => u.Username == dto.Username)).FirstOrDefault();
+            if (userByUsername != null)
+            {
+                Console.WriteLine("User: " + userByUsername.ToString());
+            }
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, userByUsername.PasswordHash);
+            Console.WriteLine("is password valid: " + isPasswordValid);
+            var user = (await _userService.GetUsersByPredicateAsync(u => u.Username == dto.Username && isPasswordValid)).FirstOrDefault();
             if (user != null)
             {
                 Console.WriteLine("User: " + user.ToString());
+
+                // Ensure that the user properties are not null
+                var userId = user.UserId.ToString() ?? throw new ArgumentNullException(nameof(user.UserId));
+                var email = user.Email ?? throw new ArgumentNullException(nameof(user.Email));
+
                 var claims = new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, _configuration["JwtSettings:Subject"]),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim("Role", user.Role.ToString()),            
                     new Claim("UserId", user.UserId.ToString()),
                     new Claim("Email", user.Email),
                 };
@@ -83,7 +93,21 @@ namespace CTF_Platform_dotnet.Controllers
                     signingCredentials: signIn
                 );
                 string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
-                return Ok(new {Token = tokenValue, User = user});
+
+                var userResponse = new
+                {
+                    user.UserId,
+                    user.Username,
+                    user.Email,
+                    role = user.Role.ToString(), // Convert the enum to string
+                    user.CreatedAt,
+                    user.Points,
+                    user.TeamId,
+                    user.Submissions,
+                    user.SupportTickets
+                };
+
+                return Ok(new {Token = tokenValue, User = userResponse });
             }
 
             return NoContent();
