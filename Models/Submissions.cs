@@ -16,7 +16,7 @@ namespace CTF_Platform_dotnet.Models
 
         [Required]
         [MaxLength(255)]
-        public string SubmittedFlag { get; set; }
+        public string SubmittedFlag { get; set; } = string.Empty;
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
