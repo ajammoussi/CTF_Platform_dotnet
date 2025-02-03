@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: ctf_platform
     ports:
-      - "5433:5432"  # Map port 5433 on the host to port 5432 in the container
+      - "5432:5432"  # Map port 5432 on the host to port 5432 in the container
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

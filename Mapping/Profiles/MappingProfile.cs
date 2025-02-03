@@ -13,6 +13,10 @@ namespace CTF_Platform_dotnet.Mapping
             CreateMap<Submission, SubmissionDto>();
             CreateMap<Team, TeamDto>();
             CreateMap<SupportTicket, TicketDto>();
+
+            CreateMap<CreateChallengeDto, Challenge>();
+            CreateMap<UpdateChallengeDto, Challenge>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CTF_Platform_dotnet.Migrations
 {
     [DbContext(typeof(CTFContext))]
-    [Migration("20250129201226_InitialCreate")]
+    [Migration("20250202181552_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -33,19 +33,20 @@ namespace CTF_Platform_dotnet.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ChallengeId"));
 
                     b.Property<int>("Category")
-                        .HasMaxLength(50)
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<int>("Difficulty")
-                        .HasMaxLength(20)
                         .HasColumnType("integer");
 
                     b.Property<string>("FilePath")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -53,6 +54,9 @@ namespace CTF_Platform_dotnet.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()

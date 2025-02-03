@@ -19,12 +19,14 @@ namespace CTF_Platform_dotnet.Migrations
                     ChallengeId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Category = table.Column<int>(type: "integer", maxLength: 50, nullable: false),
-                    Difficulty = table.Column<int>(type: "integer", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false),
+                    Difficulty = table.Column<int>(type: "integer", nullable: false),
                     Points = table.Column<int>(type: "integer", nullable: false),
                     Flag = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    FilePath = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                    FilePath = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
