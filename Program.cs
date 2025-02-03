@@ -1,4 +1,5 @@
 using CTF_Platform_dotnet.Mapping;
+using CTF_Platform_dotnet.Models;
 using CTF_Platform_dotnet.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -28,6 +29,9 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+// for submission repository dependency injection
+builder.Services.AddScoped<IRepository<Submission>, SubmissionRepository>();
+
 
 // Swagger Configuration
 builder.Services.AddEndpointsApiExplorer();
