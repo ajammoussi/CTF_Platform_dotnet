@@ -132,6 +132,7 @@ namespace CTF_Platform_dotnet.Controllers
                         Username = dto.Username,
                         Email = dto.Email,
                         PasswordHash = dtoPasswordHash,
+                        Role = Models.Enums.RoleEnum.Participant,
                         CreatedAt = DateTime.UtcNow,
                         Points = 0
                     };
@@ -178,7 +179,14 @@ namespace CTF_Platform_dotnet.Controllers
                     // Commit the transaction
                     await transaction.CommitAsync();
 
-                    return Ok(new { Message = "User and its team registered successfully", User = user, Team = team });
+                    // Automatically log in the user
+                    var loginDto = new LoginDto
+                    {
+                        Username = dto.Username,
+                        Password = dto.Password
+                    };
+
+                    return await Login(loginDto);
                 }
                 catch (Exception e)
                 {
