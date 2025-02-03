@@ -64,6 +64,33 @@ namespace CTF_Platform_dotnet.Migrations
                     b.ToTable("Challenges");
                 });
 
+            modelBuilder.Entity("CTF_Platform_dotnet.Models.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Invitations");
+                });
+
             modelBuilder.Entity("CTF_Platform_dotnet.Models.Submission", b =>
                 {
                     b.Property<int>("SubmissionId")
@@ -208,6 +235,17 @@ namespace CTF_Platform_dotnet.Migrations
                     b.HasIndex("TeamId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CTF_Platform_dotnet.Models.Invitation", b =>
+                {
+                    b.HasOne("CTF_Platform_dotnet.Models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("CTF_Platform_dotnet.Models.Submission", b =>

@@ -32,6 +32,21 @@ namespace CTF_Platform_dotnet.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Invitations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TeamId = table.Column<int>(type: "integer", nullable: false),
+                    UserEmail = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invitations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Submissions",
                 columns: table => new
                 {
@@ -114,6 +129,11 @@ namespace CTF_Platform_dotnet.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Invitations_TeamId",
+                table: "Invitations",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Submissions_ChallengeId",
                 table: "Submissions",
                 column: "ChallengeId");
@@ -148,6 +168,14 @@ namespace CTF_Platform_dotnet.Migrations
                 name: "IX_Users_TeamId",
                 table: "Users",
                 column: "TeamId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Invitations_Teams_TeamId",
+                table: "Invitations",
+                column: "TeamId",
+                principalTable: "Teams",
+                principalColumn: "TeamId",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Submissions_Teams_TeamId",
@@ -186,6 +214,9 @@ namespace CTF_Platform_dotnet.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Users_Teams_TeamId",
                 table: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Invitations");
 
             migrationBuilder.DropTable(
                 name: "Submissions");

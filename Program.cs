@@ -1,6 +1,9 @@
 using CTF_Platform_dotnet.Mapping;
 using CTF_Platform_dotnet.Repositories;
+using CTF_Platform_dotnet.Services.EmailSender;
 using Microsoft.EntityFrameworkCore;
+using SendGrid;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
+builder.Services.AddSingleton<ISendGridClient>(sp =>
+    new SendGridClient(builder.Configuration["SendGrid:ApiKey"])
+);
 
 var app = builder.Build();
 
