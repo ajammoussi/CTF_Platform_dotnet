@@ -10,6 +10,7 @@ public class CTFContext : DbContext
     public DbSet<Challenge> Challenges { get; set; }
     public DbSet<Submission> Submissions { get; set; }
     public DbSet<SupportTicket> SupportTickets { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -58,5 +59,10 @@ public class CTFContext : DbContext
             .HasOne(st => st.User)
             .WithMany(u => u.SupportTickets)
             .HasForeignKey(st => st.UserId);
+
+        modelBuilder.Entity<Invitation>()
+            .HasOne(i => i.Team)
+            .WithMany()
+            .HasForeignKey(i => i.TeamId);
     }
 }

@@ -12,8 +12,8 @@ namespace CTF_Platform_dotnet.Models
         [MaxLength(100)]
         public required string TeamName { get; set; }
 
-        [Required]
-        public int CreatedByUserId { get; set; }
+        //[Required]
+        public int? CreatedByUserId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
