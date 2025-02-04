@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CTF_Platform_dotnet.Migrations
 {
     [DbContext(typeof(CTFContext))]
-    [Migration("20250204175359_SeedData-DONOTDELETE")]
+    [Migration("20250204203113_SeedData-DONOTDELETE")]
     partial class SeedDataDONOTDELETE
     {
         /// <inheritdoc />
@@ -230,6 +230,9 @@ namespace CTF_Platform_dotnet.Migrations
                         .IsUnique();
 
                     b.HasIndex("TeamId");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

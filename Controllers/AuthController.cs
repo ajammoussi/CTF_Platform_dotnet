@@ -64,12 +64,11 @@ namespace CTF_Platform_dotnet.Controllers
             // hash the password of the dto with bcrypt
            
             var userByUsername = (await _userService.GetUsersByPredicateAsync(u => u.Username == dto.Username)).FirstOrDefault();
-            if (userByUsername != null)
+            if (userByUsername == null)
             {
-                Console.WriteLine("User: " + userByUsername.ToString());
+                return BadRequest("Invalid username.");
             }
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, userByUsername.PasswordHash);
-            Console.WriteLine("is password valid: " + isPasswordValid);
             var user = (await _userService.GetUsersByPredicateAsync(u => u.Username == dto.Username && isPasswordValid)).FirstOrDefault();
             if (user != null)
             {
@@ -118,7 +117,7 @@ namespace CTF_Platform_dotnet.Controllers
                 return Ok(new {Token = tokenValue, User = userResponse });
             }
 
-            return NoContent();
+            return BadRequest("Invalid password.");
         }
 
         [HttpPost("signup")]
@@ -127,6 +126,13 @@ namespace CTF_Platform_dotnet.Controllers
             if (dto == null)
             {
                 return BadRequest("Invalid user data.");
+            }
+
+            // Check if the username or email already exists
+            var existingUser = await _userService.GetUsersByPredicateAsync(u => u.Username == dto.Username || u.Email == dto.Email);
+            if (existingUser.Any())
+            {
+                return BadRequest("Username or email already exists.");
             }
 
             using (var transaction = await _cTFContext.Database.BeginTransactionAsync())
@@ -154,8 +160,6 @@ namespace CTF_Platform_dotnet.Controllers
                         throw new Exception("User registration failed.");
                     }
 
-                    Console.WriteLine("User registered successfully");
-
                     // Create a team with the username as the team name
                     var team = new Team
                     {
@@ -174,15 +178,11 @@ namespace CTF_Platform_dotnet.Controllers
                         throw new Exception("Team creation failed.");
                     }
 
-                    Console.WriteLine("Team created successfully"); 
-
                     // Assign the created team ID to the user
                     registeredUser.TeamId = registeredTeam.TeamId;
                     registeredUser.Team = registeredTeam;
 
                     await _userService.UpdateUserAsync(registeredUser);
-
-                    Console.WriteLine("User assigned to team successfully");
 
                     // Commit the transaction
                     await transaction.CommitAsync();
@@ -203,6 +203,22 @@ namespace CTF_Platform_dotnet.Controllers
                     return StatusCode(500, "An error occurred while registering the user. " + e.Message + e.InnerException?.Message);
                 }
             }
+        }
+
+        // logout 
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutDto dto)
+        {
+            var user = (await _userService.GetUsersByPredicateAsync(u => u.LoginToken == dto.Token && u.UserId == dto.UserId)).FirstOrDefault();
+            if (user == null)
+            {
+                return BadRequest("Invalid token.");
+            }
+            user.LoginToken = null;
+            user.LoginTokenExpiry = null;
+            await _userService.UpdateUserAsync(user);
+            return Ok("Logged out successfully.");
         }
 
         [HttpPost("forgot-password")]

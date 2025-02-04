@@ -22,8 +22,13 @@ public class CTFContext : DbContext
             .ValueGeneratedOnAdd();
 
         modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+
         modelBuilder.Entity<User>()
             .HasOne(u=>u.Team)
             .WithMany(t=>t.Users)

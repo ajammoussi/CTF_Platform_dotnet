@@ -228,6 +228,9 @@ namespace CTF_Platform_dotnet.Migrations
 
                     b.HasIndex("TeamId");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
