@@ -8,38 +8,43 @@ namespace CTF_Platform_dotnet.Models
     public class User
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string Username { get; set; }
+        public required string Username { get; set; }
 
         [Required]
         [DataType(DataType.EmailAddress)]
         [MaxLength(100)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
         [MaxLength(255)]
-        public string PasswordHash { get; set; }
+        public required string PasswordHash { get; set; }
 
         [Required]
         public RoleEnum Role { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Required]
         public int Points { get; set; } = 0;
 
-        //[Required]
         public int? TeamId { get; set; }
+        public string? LoginToken { get; set; }
+        public DateTime? LoginTokenExpiry { get; set; }
+
+        // For password reset
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
 
 
         // Navigation properties
-        [ForeignKey(nameof(TeamId))]
         public Team? Team { get; set; }
-        public ICollection<Submission> Submissions { get; set; }
-        public ICollection<SupportTicket> SupportTickets { get; set; }
+        public ICollection<Submission> Submissions { get; set; } = new List<Submission>();
+        public ICollection<SupportTicket> SupportTickets { get; set; } = new List<SupportTicket>();
 
     }
 }

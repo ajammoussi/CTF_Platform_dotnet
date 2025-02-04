@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CTF_Platform_dotnet.Migrations
 {
     [DbContext(typeof(CTFContext))]
-    partial class CTFContextModelSnapshot : ModelSnapshot
+    [Migration("20250204203113_SeedData-DONOTDELETE")]
+    partial class SeedDataDONOTDELETE
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,8 +34,10 @@ namespace CTF_Platform_dotnet.Migrations
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -64,33 +69,6 @@ namespace CTF_Platform_dotnet.Migrations
                     b.HasKey("ChallengeId");
 
                     b.ToTable("Challenges");
-                });
-
-            modelBuilder.Entity("CTF_Platform_dotnet.Models.Invitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Expiration")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TeamId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserEmail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("Invitations");
                 });
 
             modelBuilder.Entity("CTF_Platform_dotnet.Models.Submission", b =>
@@ -175,7 +153,7 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("CreatedByUserId")
+                    b.Property<int>("CreatedByUserId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ResetToken")
@@ -253,18 +231,10 @@ namespace CTF_Platform_dotnet.Migrations
 
                     b.HasIndex("TeamId");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("CTF_Platform_dotnet.Models.Invitation", b =>
-                {
-                    b.HasOne("CTF_Platform_dotnet.Models.Team", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("CTF_Platform_dotnet.Models.Submission", b =>
@@ -309,7 +279,9 @@ namespace CTF_Platform_dotnet.Migrations
                 {
                     b.HasOne("CTF_Platform_dotnet.Models.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId");
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("CreatedByUser");
                 });

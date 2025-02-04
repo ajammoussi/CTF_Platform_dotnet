@@ -16,8 +16,20 @@ public class CTFContext : DbContext
     {
         // Configure relationships
         modelBuilder.Entity<User>()
+            .HasKey(u => u.UserId);
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.UserId)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+
         modelBuilder.Entity<User>()
             .HasOne(u=>u.Team)
             .WithMany(t=>t.Users)
