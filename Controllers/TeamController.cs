@@ -1,225 +1,260 @@
 ﻿using CTF_Platform_dotnet.Models;
+using CTF_Platform_dotnet.Services;
 using CTF_Platform_dotnet.Services.EmailSender;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using static CTF_Platform_dotnet.Services.Generic.IService;
 
-public class InvitationRequest
+namespace CTF_Platform_dotnet.Controllers
 {
-    [Required, EmailAddress]
-    public string Email { get; set; }
-}
 
-public class CreateTeamRequest
-{
-    [Required, MaxLength(100)]
-    public string TeamName { get; set; }
-}
-[Route("team")]
-[ApiController]
-public class TeamController : Controller
-{
-    private readonly CTFContext _context;
-    private readonly IEmailSender _emailSender;
-
-    public TeamController(CTFContext context, IEmailSender emailSender)
+    public class InvitationRequest
     {
-        _context = context;
-        _emailSender = emailSender;
+        [Required, EmailAddress]
+        public string Email { get; set; }
     }
 
-    [HttpPost("create-team")]
-    public async Task<IActionResult> CreateTeam([FromBody] CreateTeamRequest request)
+    public class CreateTeamRequest
     {
-        var user = await GetCurrentUser();
-        var oldTeam = await _context.Teams.FindAsync(user.TeamId);
+        [Required, MaxLength(100)]
+        public string TeamName { get; set; }
+    }
 
-        if (oldTeam == null)
+    [Route("api/team")]
+    [ApiController]
+    public class TeamController : Controller
+    {
+        private readonly CTFContext _context;
+        private readonly IEmailSender _emailSender;
+        private readonly IUserService _userService;
+        private readonly ITeamService _teamService;
+        private readonly IService<Invitation> _invitationService;
+
+        public TeamController(CTFContext context, IEmailSender emailSender, IUserService userService, ITeamService teamService, IService<Invitation> invitationService)
         {
-            return BadRequest("User is not part of an existing team.");
+            _context = context;
+            _emailSender = emailSender;
+            _userService = userService;
+            _teamService = teamService;
+            _invitationService = invitationService;
         }
 
-        var newTeam = new Team
+        [Authorize(Policy = "ParticipantOnly")]
+        [HttpPost("create-team")]
+        public async Task<IActionResult> CreateTeam([FromBody] CreateTeamRequest request)
         {
-            TeamName = request.TeamName,
-            CreatedByUserId = user.UserId,
-            TotalPoints = user.Points,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUser = user,
-            Users = new List<User> { user }
-        };
+            var user = await GetCurrentUserAsync();
+            var oldTeam = (await _teamService.GetTeamsByPredicateAsync(t => t.CreatedByUserId == user.UserId)).FirstOrDefault();
 
-        oldTeam.TotalPoints -= user.Points;
-        _context.Teams.Add(newTeam);
-        user.TeamId = newTeam.TeamId;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(newTeam);
-    }
-
-    [HttpPost("create-invitation")]
-    public async Task<IActionResult> CreateInvitation([FromBody] InvitationRequest request)
-    {
-        var currentUser = await GetCurrentUser();
-        var team = await _context.Teams.FindAsync(currentUser.TeamId);
-
-        if (team == null)
-            return NotFound("Team not found");
-
-        var invitation = new Invitation
-        {
-            Token = Guid.NewGuid().ToString(),
-            Expiration = DateTime.UtcNow.AddMinutes(5),
-            TeamId = team.TeamId,
-            UserEmail = request.Email
-        };
-
-        _context.Invitations.Add(invitation);
-        await _context.SaveChangesAsync();
-
-        var callbackUrl = Url.Action("AcceptInvitation", "Team",
-            new { token = invitation.Token }, Request.Scheme);
-
-        await _emailSender.SendEmailAsync(
-            request.Email,
-            "Team Invitation",
-            $"Join the team by clicking here: {callbackUrl}");
-
-        return Ok(new { message = "Invitation sent" });
-    }
-
-    [HttpGet("accept-invitation/{token}")]
-    public async Task<IActionResult> AcceptInvitation(string token)
-    {
-        var user = await GetCurrentUser();
-        var invitation = await _context.Invitations
-            .FirstOrDefaultAsync(i => i.Token == token && i.Expiration > DateTime.UtcNow);
-
-        if (invitation == null)
-            return BadRequest("Invalid or expired invitation");
-
-        var oldTeam = await _context.Teams.FindAsync(user.TeamId);
-        var newTeam = await _context.Teams.FindAsync(invitation.TeamId);
-
-        if (oldTeam != null)
-        {
-            oldTeam.TotalPoints -= user.Points;
-        }
-
-        user.TeamId = newTeam.TeamId;
-        user.Points = 0;
-        newTeam.TotalPoints += user.Points;
-
-        await _context.SaveChangesAsync();
-        return Ok();
-    }
-
-    [HttpPost("leave-team")]
-    public async Task<IActionResult> LeaveTeam()
-    {
-        var user = await GetCurrentUser();
-        var team = await _context.Teams
-            .Include(t => t.Users)
-            .FirstOrDefaultAsync(t => t.TeamId == user.TeamId);
-
-        if (team == null)
-            return NotFound("Team not found");
-
-        if (user.UserId == team.CreatedByUserId)
-        {
-            foreach (var member in team.Users.ToList())
+            if (oldTeam == null)
             {
-                await CreatePersonalTeam(member);
+                return BadRequest("User is not part of an existing team.");
             }
-            _context.Teams.Remove(team);
+
+            // Create the new team
+            var newTeam = new Team
+            {
+                TeamName = request.TeamName,
+                CreatedByUserId = user.UserId,
+                TotalPoints = user.Points,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUser = user,
+                Users = new List<User> { user }
+            };
+
+            // Save the new team to the database first
+            _context.Teams.Add(newTeam);
+            await _context.SaveChangesAsync(); // This generates the TeamId
+
+            // Update the user's TeamId to the new team's ID
+            user.TeamId = newTeam.TeamId;
+
+            // Deduct points from the old team
+            oldTeam.TotalPoints -= user.Points;
+
+            // remove oldTeam from the db
+            _context.Teams.Remove(oldTeam);
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+
+            return Ok(newTeam);
         }
-        else
+
+        [Authorize(Policy = "ParticipantOnly")]
+        [HttpPost("create-invitation/{id}")]
+        public async Task<IActionResult> CreateInvitation(string id)
         {
-            team.TotalPoints -= user.Points;
-            await CreatePersonalTeam(user);
-        }
+            // Fetch the current user
+            var currentUser = await GetCurrentUserAsync();
+            Console.WriteLine(currentUser.UserId);
+            var team = await _context.Teams.FindAsync(currentUser.TeamId);
 
-        await _context.SaveChangesAsync();
-        return Ok();
-    }
+            if (team == null)
+                return NotFound("Team not found");
 
-    [HttpPost("kick-member/{userId}")]
-    public async Task<IActionResult> KickMember(int userId)
-    {
-        var currentUser = await GetCurrentUser();
-        var team = await _context.Teams.FindAsync(currentUser.TeamId);
+            // Convert the id parameter to an int
+            if (!int.TryParse(id, out int userId))
+            {
+                return BadRequest("Invalid user ID format.");
+            }
 
-        if (team?.CreatedByUserId != currentUser.UserId)
-            return Forbid();
+            // Fetch the user to whom the invitation is being sent
+            var userToInvite = await _context.Users.FindAsync(userId); // <-- Now using int
+            if (userToInvite == null)
+                return NotFound("User not found");
 
-        var userToKick = await _context.Users.FindAsync(userId);
-        if (userToKick == null || userToKick.TeamId != team.TeamId)
-            return NotFound("User not in team");
+            // Create the invitation
+            var invitation = new Invitation
+            {
+                Token = Guid.NewGuid().ToString(),
+                Expiration = DateTime.UtcNow.AddMinutes(5),
+                TeamId = team.TeamId,
+                UserEmail = userToInvite.Email // Use the email of the user to be invited
+            };
 
-        team.TotalPoints -= userToKick.Points;
-        await CreatePersonalTeam(userToKick);
+            _context.Invitations.Add(invitation);
+            await _context.SaveChangesAsync();
 
-        await _context.SaveChangesAsync();
-        return Ok();
-    }
+            // Generate the callback URL
+            var callbackUrl = Url.Action("AcceptInvitation", "Team",
+                new { token = invitation.Token }, Request.Scheme);
 
-    private async Task CreatePersonalTeam(User user)
-    {
-        var personalTeam = new Team
-        {
-            TeamName = user.Username,
-            CreatedByUserId = user.UserId,
-            TotalPoints = user.Points,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUser = user,
-            Users = new List<User> { user }
-        };
-
-        _context.Teams.Add(personalTeam);
-        await _context.SaveChangesAsync();
-        user.TeamId = personalTeam.TeamId;
-    }
-
-    private async Task<User> GetCurrentUser()
-    {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        return await _context.Users.FindAsync(userId);
-    }
-
-    [HttpPost("test-email")]
-    public async Task<IActionResult> TestEmail([FromQuery] string email)
-    {
-        try
-        {
+            // Send the invitation email
             await _emailSender.SendEmailAsync(
-                email,
-                "Test Email",
-                "<strong>This is a test email from CTF Platform</strong>"
-            );
-            return Ok("Email sent successfully");
+                userToInvite.Email,
+                "Team Invitation",
+                $"Join the team by clicking here: {callbackUrl}");
+
+            return Ok(new { message = "Invitation sent" });
         }
-        catch (Exception ex)
+
+        [Authorize(Policy = "ParticipantOnly")]
+        [HttpPost("accept-invitation/{token}")]
+        public async Task<IActionResult> AcceptInvitation(string token)
         {
-            return StatusCode(500, $"Error sending email: {ex.Message}");
+            Console.WriteLine("Starting AcceptInvitation method...");
+
+            // Fetch the current user
+            var user = await GetCurrentUserAsync();
+            Console.WriteLine($"Current user: UserId = {user.UserId}, TeamId = {user.TeamId}, Points = {user.Points}");
+
+            // Fetch the invitation by token
+            var invitation = (await _invitationService.GetByPredicateAsync(i => i.Token == token)).FirstOrDefault();
+            Console.WriteLine($"Invitation found: {(invitation != null ? $"Token = {invitation.Token}, TeamId = {invitation.TeamId}" : "null")}");
+
+            if (invitation == null)
+            {
+                Console.WriteLine("Invalid or expired invitation.");
+                return BadRequest("Invalid or expired invitation");
+            }
+
+            // Fetch the user's current team (old team)
+            var oldTeam = (await _teamService.GetTeamsByPredicateAsync(t => t.TeamId == user.TeamId)).FirstOrDefault();
+            Console.WriteLine($"Old team: {(oldTeam != null ? $"TeamId = {oldTeam.TeamId}, TotalPoints = {oldTeam.TotalPoints}" : "null")}");
+
+            // Fetch the new team (team from the invitation)
+            var newTeam = await _teamService.GetTeamByIdAsync(invitation.TeamId);
+            Console.WriteLine($"New team: TeamId = {newTeam.TeamId}, TotalPoints = {newTeam.TotalPoints}");
+
+            if (oldTeam != null)
+            {
+                // Deduct the user's points from the old team
+                oldTeam.TotalPoints -= user.Points;
+                Console.WriteLine($"Old team updated: TotalPoints = {oldTeam.TotalPoints}");
+            }
+
+            // Update the user's team and points
+            user.TeamId = newTeam.TeamId;
+            user.Points = 0;
+            Console.WriteLine($"User updated: TeamId = {user.TeamId}, Points = {user.Points}");
+
+            // Add the user's points to the new team
+            newTeam.TotalPoints += user.Points;
+            Console.WriteLine($"New team updated: TotalPoints = {newTeam.TotalPoints}");
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+            Console.WriteLine("Changes saved to the database.");
+
+            return Ok("Changed to new team");
         }
+
+        [Authorize(Policy = "ParticipantOnly")]
+        [HttpPost("leave-team")]
+        public async Task<IActionResult> LeaveTeam()
+        {
+            var user = await GetCurrentUserAsync();
+            var team = (await _teamService.GetTeamsByPredicateAsync(t => t.TeamId == user.TeamId)).FirstOrDefault();
+
+            if (team == null)
+                return NotFound("Team not found");
+
+            // Check if the current user is the team creator
+            if (user.UserId == team.CreatedByUserId)
+            {
+                return BadRequest("The team creator cannot leave the team. Please delete the team instead.");
+            }
+
+            if (user.UserId == team.CreatedByUserId)
+            {
+                foreach (var member in team.Users.ToList())
+                {
+                    await CreatePersonalTeam(member);
+                }
+                _context.Teams.Remove(team);
+            }
+            else
+            {
+                team.TotalPoints -= user.Points;
+                await CreatePersonalTeam(user);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        private async Task CreatePersonalTeam(User user)
+        {
+            var personalTeam = new Team
+            {
+                TeamName = user.Username,
+                CreatedByUserId = user.UserId,
+                TotalPoints = user.Points,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUser = user,
+                Users = new List<User> { user }
+            };
+
+            _context.Teams.Add(personalTeam);
+            await _context.SaveChangesAsync();
+            user.TeamId = personalTeam.TeamId;
+        }
+
+        private async Task<User> GetCurrentUserAsync()
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                throw new UnauthorizedAccessException("User ID claim not found.");
+            }
+
+            int userId = int.Parse(userIdClaim); // Convert to int
+
+            // Fetch the user from the database
+            var user = await _userService.GetUserByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found.");
+            }
+
+            return user;
+        }
+
     }
-
-
-    [HttpGet("join-team/{userId}/{teamId}")]
-    public async Task<IActionResult> JoinTeam(int userId, int teamId)
-    {
-        var user = await _context.Users.FindAsync(userId);
-        var team = await _context.Teams.FindAsync(teamId);
-        if (user == null || team == null)
-            return NotFound("User or team not found");
-        if (user.TeamId != null)
-            return BadRequest("User is already part of a team");
-        user.TeamId = teamId;
-        team.TotalPoints += user.Points;
-        await _context.SaveChangesAsync();
-        return Ok();
-    }
-
 }

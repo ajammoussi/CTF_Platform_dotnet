@@ -1,9 +1,13 @@
 ﻿using CTF_Platform_dotnet.Models;
 using CTF_Platform_dotnet.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using static CTF_Platform_dotnet.Services.Generic.IService;
 
 namespace CTF_Platform_dotnet.Services
 {
@@ -18,7 +22,7 @@ namespace CTF_Platform_dotnet.Services
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return await _userRepository.GetAllAsync();
+            return await _userRepository.GetAll().ToListAsync();
         }
 
         public async Task<User> GetUserByIdAsync(int id)
@@ -43,17 +47,17 @@ namespace CTF_Platform_dotnet.Services
 
         public async Task<IEnumerable<User>> GetUsersByPredicateAsync(Expression<Func<User, bool>> predicate)
         {
-            return await _userRepository.Where(predicate);
+            return await _userRepository.Where(predicate).ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetUsersOrderedAsync<TKey>(Expression<Func<User, TKey>> keySelector, bool ascending = true)
         {
-            return await _userRepository.OrderBy(keySelector, ascending);
+            return await _userRepository.OrderBy(keySelector, ascending).ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetPagedUsersAsync(int pageNumber, int pageSize)
         {
-            return await _userRepository.GetPagedAsync(pageNumber, pageSize);
+            return (IEnumerable<User>)await _userRepository.GetPagedAsync(pageNumber, pageSize);
         }
 
         public async Task<int> CountUsersAsync(Expression<Func<User, bool>>? predicate = null)
@@ -65,5 +69,26 @@ namespace CTF_Platform_dotnet.Services
         {
             return await _userRepository.ExistsAsync(predicate);
         }
+
+        //public async Task<User> GetCurrentUser()
+        //{
+        //    // Get the user's ID from the claims
+        //    var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        throw new UnauthorizedAccessException("User is not authenticated.");
+        //    }
+
+        //    // Fetch the user from the database
+        //    var user = await GetUserByIdAsync(int.Parse(userId));
+
+        //    if (user == null)
+        //    {
+        //        throw new InvalidOperationException("User not found.");
+        //    }
+
+        //    return user;
+        //}
     }
 }

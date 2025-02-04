@@ -3,14 +3,6 @@ using CTF_Platform_dotnet.Repositories;
 using CTF_Platform_dotnet.Services.EmailSender;
 using Microsoft.EntityFrameworkCore;
 using SendGrid;
-
-
-var builder = WebApplication.CreateBuilder(args);
-
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
 using System.Text;
 using CTF_Platform_dotnet.Auth;
 using CTF_Platform_dotnet.Repositories;
@@ -22,8 +14,17 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using CTF_Platform_dotnet.Services.EmailSender;
 using SendGrid;
+using CTF_Platform_dotnet.Services.Generic;
+using static CTF_Platform_dotnet.Services.Generic.IService;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 
 // Configuration of services
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
@@ -34,6 +35,7 @@ builder.Services.AddDbContext<CTFContext>(options =>
 
 //register repository so it can be injected into controllers
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(IService<>), typeof(Service<>));
 
 builder.Services.AddScoped<IAdminService, AdminService>();
 

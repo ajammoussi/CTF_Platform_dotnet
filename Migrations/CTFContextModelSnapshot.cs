@@ -31,8 +31,10 @@ namespace CTF_Platform_dotnet.Migrations
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -252,6 +254,9 @@ namespace CTF_Platform_dotnet.Migrations
                         .IsUnique();
 
                     b.HasIndex("TeamId");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

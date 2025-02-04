@@ -1,4 +1,4 @@
-﻿namespace CTF_Platform_dotnet.Models.DTOs
+﻿namespace CTF_Platform_dotnet.DTOs
 {
     public class LogoutDto
     {

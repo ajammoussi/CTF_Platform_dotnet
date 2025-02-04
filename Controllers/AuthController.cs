@@ -1,7 +1,6 @@
 ﻿using CTF_Platform_dotnet.Auth;
+using CTF_Platform_dotnet.DTOs;
 using CTF_Platform_dotnet.Models;
-using CTF_Platform_dotnet.Models.Dtos;
-using CTF_Platform_dotnet.Models.DTOs;
 using CTF_Platform_dotnet.Services;
 using CTF_Platform_dotnet.Services.EmailSender;
 using Microsoft.AspNetCore.Mvc;

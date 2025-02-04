@@ -1,4 +1,4 @@
-﻿namespace CTF_Platform_dotnet.Models.Dtos
+﻿namespace CTF_Platform_dotnet.DTOs
 {
     public class SignupDto
     {
