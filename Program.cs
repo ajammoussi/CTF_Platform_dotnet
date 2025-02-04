@@ -1,14 +1,14 @@
 using System.Text;
 using CTF_Platform_dotnet.Auth;
-using CTF_Platform_dotnet.Models;
 using CTF_Platform_dotnet.Repositories;
 using CTF_Platform_dotnet.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using CTF_Platform_dotnet.Services.EmailSender;
+using SendGrid;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +69,11 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ChallengeCreatorOnly", policy =>
         policy.RequireClaim("Role", "ChallengeCreator"));
 });
+
+builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
+builder.Services.AddSingleton<ISendGridClient>(sp =>
+    new SendGridClient(builder.Configuration["SendGrid:ApiKey"])
+);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

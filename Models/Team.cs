@@ -20,6 +20,10 @@ namespace CTF_Platform_dotnet.Models
         [Required]
         public int TotalPoints { get; set; } = 0;
 
+        // For password reset
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
+
         // Navigation properties
         public User? CreatedByUser { get; set; }
         public ICollection<User> Users {get;set;} = new List<User>(); 

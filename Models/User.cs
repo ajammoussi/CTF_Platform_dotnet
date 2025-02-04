@@ -8,6 +8,7 @@ namespace CTF_Platform_dotnet.Models
     public class User
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
 
         [Required]
@@ -32,6 +33,12 @@ namespace CTF_Platform_dotnet.Models
         public int Points { get; set; } = 0;
 
         public int? TeamId { get; set; }
+        public string? LoginToken { get; set; }
+        public DateTime? LoginTokenExpiry { get; set; }
+
+        // For password reset
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
 
 
         // Navigation properties

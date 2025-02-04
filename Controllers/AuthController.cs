@@ -3,9 +3,11 @@ using CTF_Platform_dotnet.Models;
 using CTF_Platform_dotnet.Models.Dtos;
 using CTF_Platform_dotnet.Models.DTOs;
 using CTF_Platform_dotnet.Services;
+using CTF_Platform_dotnet.Services.EmailSender;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SendGrid.Helpers.Mail;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -21,14 +23,16 @@ namespace CTF_Platform_dotnet.Controllers
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
         private readonly ITeamService _teamService;
+        private readonly IEmailSender _emailSender;
 
-        public AuthController(CTFContext cTFContext, JwtSettings jwtSettings, IConfiguration configuration, IUserService userService, ITeamService teamService)
+        public AuthController(CTFContext cTFContext, JwtSettings jwtSettings, IConfiguration configuration, IUserService userService, ITeamService teamService, IEmailSender emailSender)
         {
             _cTFContext = cTFContext;
             _jwtSettings = jwtSettings;
             _configuration = configuration;
             _userService = userService;
             _teamService = teamService;
+            _emailSender = emailSender;
         }
 
         [HttpPost("token")]
@@ -85,14 +89,18 @@ namespace CTF_Platform_dotnet.Controllers
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
                 var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var expiry = DateTime.UtcNow.AddMinutes(60);
                 var token = new JwtSecurityToken(
                     _configuration["JwtSettings:Issuer"],
                     _configuration["JwtSettings:Audience"],
                     claims,
-                    expires: DateTime.UtcNow.AddMinutes(60),
+                    expires: expiry,
                     signingCredentials: signIn
                 );
                 string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+                user.LoginToken = tokenValue;
+                user.LoginTokenExpiry = expiry;
+                await _userService.UpdateUserAsync(user);
 
                 var userResponse = new
                 {
@@ -104,7 +112,7 @@ namespace CTF_Platform_dotnet.Controllers
                     user.Points,
                     user.TeamId,
                     user.Submissions,
-                    user.SupportTickets
+                    user.SupportTickets,
                 };
 
                 return Ok(new {Token = tokenValue, User = userResponse });
@@ -195,6 +203,62 @@ namespace CTF_Platform_dotnet.Controllers
                     return StatusCode(500, "An error occurred while registering the user. " + e.Message + e.InnerException?.Message);
                 }
             }
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var user = (await _userService.GetUsersByPredicateAsync(u => u.Email == dto.Email)).FirstOrDefault();
+            if (user == null)
+            {
+                // For security reasons, don't reveal that the user doesn't exist
+                return Ok("If your email is registered, you will receive a password reset link.");
+            }
+
+            // Generate a password reset token
+            var resetToken = Guid.NewGuid().ToString();
+            user.ResetToken = resetToken;
+            user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1); // Token expires in 1 hour
+
+            await _userService.UpdateUserAsync(user);
+
+            // Send the reset token via email
+            var resetLink = $"{_configuration["Frontend:BaseUrl"]}/reset-password?token={resetToken}";
+            var emailSubject = "Password Reset Request";
+            var emailBody = $"Please reset your password by clicking <a href='{resetLink}'>here</a>.";
+
+            Console.WriteLine("Reset link: " + resetLink);
+            Console.WriteLine("Email body: " + emailBody);
+            Console.WriteLine("Email subject: " + emailSubject);
+
+            try
+            {
+                await _emailSender.SendEmailAsync(user.Email, emailSubject, emailBody);
+                return Ok("Password reset link has been sent to your email.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Failed to send email. Please try again later.");
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var user = (await _userService.GetUsersByPredicateAsync(u => u.ResetToken == dto.Token && u.ResetTokenExpiry > DateTime.UtcNow)).FirstOrDefault();
+            if (user == null)
+            {
+                return BadRequest("Invalid or expired token.");
+            }
+
+            // Hash the new password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+
+            await _userService.UpdateUserAsync(user);
+
+            return Ok("Password has been reset successfully.");
         }
 
     } 
