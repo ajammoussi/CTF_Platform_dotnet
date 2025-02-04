@@ -12,8 +12,8 @@ namespace CTF_Platform_dotnet.Models
         [MaxLength(100)]
         public required string TeamName { get; set; }
 
-        [Required]
-        public int CreatedByUserId { get; set; }
+        //[Required]
+        public int? CreatedByUserId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -21,7 +21,7 @@ namespace CTF_Platform_dotnet.Models
         public int TotalPoints { get; set; } = 0;
 
         // Navigation properties
-        public required User CreatedByUser { get; set; }
+        public User? CreatedByUser { get; set; }
         public ICollection<User> Users {get;set;} = new List<User>(); 
         public ICollection<Submission> Submissions { get; set; } = new List<Submission>(); 
     }

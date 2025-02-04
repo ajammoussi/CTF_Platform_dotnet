@@ -1,13 +1,12 @@
-﻿using SendGrid;
+﻿using System.Net.Mail;
+using SendGrid;
 using SendGrid.Helpers.Mail;
-
 namespace CTF_Platform_dotnet.Services.EmailSender
 {
     public class SendGridEmailSender : IEmailSender
     {
         private readonly SendGridClient _client;
         private readonly EmailAddress _fromAddress;
-
         public SendGridEmailSender(IConfiguration config)
         {
             // Fixed: Use correct configuration keys and include FromName
@@ -17,7 +16,6 @@ namespace CTF_Platform_dotnet.Services.EmailSender
                 config["SendGrid:FromName"]           // Display name
             );
         }
-
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var msg = new SendGridMessage
@@ -28,13 +26,21 @@ namespace CTF_Platform_dotnet.Services.EmailSender
             };
             msg.AddTo(new EmailAddress(email));
 
+            Console.WriteLine($"Sending email to {email} with subject '{subject}'");
+
             var response = await _client.SendEmailAsync(msg);
+
+            Console.WriteLine($"Response Status Code: {(int)response.StatusCode}");
+            Console.WriteLine($"Response Body: {await response.Body.ReadAsStringAsync()}");
 
             if (!response.IsSuccessStatusCode)
             {
-                // Enhanced error message with status code
                 var errorBody = await response.Body.ReadAsStringAsync();
                 throw new Exception($"Email sending failed ({(int)response.StatusCode}): {errorBody}");
+            }
+            else
+            {
+                Console.WriteLine("Email sent successfully.");
             }
         }
     }

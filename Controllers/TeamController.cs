@@ -205,4 +205,21 @@ public class TeamController : Controller
             return StatusCode(500, $"Error sending email: {ex.Message}");
         }
     }
+
+
+    [HttpGet("join-team/{userId}/{teamId}")]
+    public async Task<IActionResult> JoinTeam(int userId, int teamId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        var team = await _context.Teams.FindAsync(teamId);
+        if (user == null || team == null)
+            return NotFound("User or team not found");
+        if (user.TeamId != null)
+            return BadRequest("User is already part of a team");
+        user.TeamId = teamId;
+        team.TotalPoints += user.Points;
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+
 }

@@ -31,13 +31,13 @@ namespace CTF_Platform_dotnet.Models
         [Required]
         public int Points { get; set; } = 0;
 
-        [Required]
-        public int TeamId { get; set; }
+        //[Required]
+        public int? TeamId { get; set; }
 
 
         // Navigation properties
         [ForeignKey(nameof(TeamId))]
-        public Team Team { get; set; }
+        public Team? Team { get; set; }
         public ICollection<Submission> Submissions { get; set; }
         public ICollection<SupportTicket> SupportTickets { get; set; }
 
