@@ -10,13 +10,13 @@ namespace CTF_Platform_dotnet.Models
         [Required]
         public int ChallengeId { get; set; }
 
-        public int? UserId { get; set; } // Nullable for team submissions
+        public int UserId { get; set; } 
 
-        public int? TeamId { get; set; } // Nullable for individual submissions
+        public int TeamId { get; set; }
 
         [Required]
         [MaxLength(255)]
-        public string SubmittedFlag { get; set; }
+        public required string SubmittedFlag { get; set; } = string.Empty;
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
@@ -24,7 +24,7 @@ namespace CTF_Platform_dotnet.Models
 
         // Navigation properties
         public Challenge Challenge { get; set; }
-        public User User { get; set; }
-        public Team Team { get; set; }
+        public User? User { get; set; }
+        public Team? Team { get; set; }
     }
 }
