@@ -4,6 +4,7 @@ using CTF_Platform_dotnet.Models;
 using CTF_Platform_dotnet.DTOs;
 using CTF_Platform_dotnet.Repositories;
 using CTF_Platform_dotnet.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CTF_Platform_dotnet.Controllers
 {
@@ -33,6 +34,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Participant")]
         public async Task<IActionResult> SubmitSolution([FromBody] SubmissionDto submissionDto)
         {
             var user = await GetCurrentUserAsync();

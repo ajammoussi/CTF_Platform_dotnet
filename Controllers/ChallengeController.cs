@@ -40,6 +40,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         // GET: api/challenges/5
+        [Authorize(Policy = "ParticipantOrAdmin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -52,6 +53,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         // POST: api/challenges
+        [Authorize(Policy = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateChallengeDto createDto)
         {
@@ -69,6 +71,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         // PUT: api/challenges/5
+        [Authorize(Policy = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateChallengeDto updateDto)
         {
@@ -89,6 +92,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         // DELETE: api/challenges/5
+        [Authorize(Policy = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
