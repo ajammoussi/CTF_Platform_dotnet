@@ -11,5 +11,6 @@ namespace CTF_Platform_dotnet.DTOs
         public DateTime CreatedAt { get; set; }
         public int Points { get; set; }
         public int TeamId { get; set; }
+        public int TotalSolves { get; set; } = 0;
     }
 }

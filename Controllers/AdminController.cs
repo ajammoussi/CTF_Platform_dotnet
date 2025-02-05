@@ -8,7 +8,7 @@ using CTF_Platform_dotnet.DTOs;
 using AutoMapper;
 
 namespace CTF_Platform_dotnet.Controllers{
-    [Route("admin")]
+    [Route("api/admin")]
     [ApiController]
     public class AdminController : ControllerBase 
     {

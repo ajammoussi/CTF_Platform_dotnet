@@ -44,13 +44,23 @@ public class AdminService : IAdminService
     public async Task<PagedResponse<TeamDto>> GetTeamScoreboardAsync(int pageNumber, int pageSize)
     {
 
+        var query = _teamRepository.GetAll()
+                .Include(t => t.Submissions.Where(s => s.IsCorrect == true));
+
         var totalItems = await _teamRepository.CountAsync();
 
-        var teams = await _teamRepository.GetAll()
+        var teams = await query
             .OrderByDescending(t => t.TotalPoints)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ProjectTo<TeamDto>(_mapper.ConfigurationProvider) // using AutoMapper
+            .Select(t => new TeamDto
+            {
+                TeamId = t.TeamId,
+                TeamName = t.TeamName,
+                CreatedAt = t.CreatedAt,
+                TotalPoints = t.TotalPoints,
+                TotalSolves = t.Submissions.Count
+            })
             .ToListAsync();
         return new PagedResponse<TeamDto>(teams, pageNumber, pageSize, totalItems);
     }
@@ -58,16 +68,26 @@ public class AdminService : IAdminService
 
     public async Task<PagedResponse<UserDto>> GetUserScoreboardAsync(int pageNumber, int pageSize)
     {
+        var query = _userRepository.GetAll()
+                .Include(u => u.Submissions.Where(s => s.IsCorrect == true));
 
         var totalItems = await _userRepository.CountAsync();
 
-        var users = await _userRepository.GetAll()
+        var users = await query
             .OrderByDescending(u => u.Points)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+            .Select(u => new UserDto
+            {
+                UserId = u.UserId,
+                Username = u.Username,
+                CreatedAt = u.CreatedAt,
+                Points = u.Points,
+                TotalSolves = u.Submissions.Count
+            })
             .ToListAsync();
         return new PagedResponse<UserDto>(users, pageNumber, pageSize, totalItems);
     }
+
 
 }

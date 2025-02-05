@@ -20,6 +20,15 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+//add cors policy to allow react app to access api
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("http://localhost:3000")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -28,6 +37,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors("AllowReactApp");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
