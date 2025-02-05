@@ -31,14 +31,14 @@ public class CTFContext : DbContext
             .IsUnique();
 
         modelBuilder.Entity<User>()
-            .HasOne(u=>u.Team)
-            .WithMany(t=>t.Users)
-            .HasForeignKey(u=>u.TeamId);
+            .HasOne(u => u.Team)
+            .WithMany(t => t.Users)
+            .HasForeignKey(u => u.TeamId);
 
         modelBuilder.Entity<Team>()
-            .HasOne(t=>t.CreatedByUser)
+            .HasOne(t => t.CreatedByUser)
             .WithMany()
-            .HasForeignKey(t=>t.CreatedByUserId);
+            .HasForeignKey(t => t.CreatedByUserId);
 
         modelBuilder.Entity<Submission>()
             .HasOne(s => s.Challenge)

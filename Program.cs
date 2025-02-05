@@ -1,7 +1,9 @@
 using CTF_Platform_dotnet.Mapping;
+using CTF_Platform_dotnet.Models;
 using CTF_Platform_dotnet.Repositories;
 using CTF_Platform_dotnet.Services.EmailSender;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using SendGrid;
 using System.Text;
 using CTF_Platform_dotnet.Auth;
@@ -20,11 +22,10 @@ using static CTF_Platform_dotnet.Services.Generic.IService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Logging Configuration
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-
 
 // Configuration of services
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
@@ -33,7 +34,7 @@ builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<J
 builder.Services.AddDbContext<CTFContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//register repository so it can be injected into controllers
+// Register Repository and Services
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IService<>), typeof(Service<>));
 
@@ -47,10 +48,14 @@ builder.Services.AddScoped<IUserService, UserService>();
 // Register the TeamService
 builder.Services.AddScoped<ITeamService, TeamService>();
 
+// for submission repository dependency injection
+builder.Services.AddScoped<IRepository<Submission>, SubmissionRepository>();
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
@@ -94,9 +99,25 @@ builder.Services.AddSingleton<ISendGridClient>(sp =>
     new SendGridClient(builder.Configuration["SendGrid:ApiKey"])
 );
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger Configuration
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "CTF Platform API",
+        Version = "v1",
+        Description = "API for managing CTF challenges",
+    });
+
+    // Enable XML comments if needed
+    var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+});
 
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<ISendGridClient>(sp =>
@@ -105,11 +126,14 @@ builder.Services.AddSingleton<ISendGridClient>(sp =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "CTF Platform API v1");
+    });
 }
 
 app.UseHttpsRedirection();
