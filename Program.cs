@@ -126,7 +126,6 @@ builder.Services.AddSingleton<ISendGridClient>(sp =>
 
 var app = builder.Build();
 
-// Configure Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
