@@ -31,60 +31,66 @@ function AdminDashboard() {
   const [challenges, setChallenges] = useState([]);
   const [submissions, setSubmissions] = useState([]);
 
-  const API_BASE_URL = "http://localhost:5278/api/admin/";
+  const API_BASE_URL = "https://localhost:7226/api/admin";
 
-  const fetchData = async (endpoint) => {
+  const fetchData = async (endpoint, pageNumber = 1, pageSize = 10) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${endpoint}`);
-      if (!response.ok)
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       return data;
     } catch (error) {
+      console.error(`Error fetching ${endpoint}:`, error);
       return null;
     }
   };
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      // Fetch stats first as they're shown regardless of active tab
-      const statsData = await fetchData("stats");
+      // Fetch dashboard stats
+      const statsData = await fetchData('dashboard');
       if (statsData) {
         setStats(statsData);
       }
 
       // Fetch data based on active tab
-      const endpoints = {
-        users: "users",
-        teams: "teams",
-        teamScoreboard: "scoreboard/teams",
-        userScoreboard: "scoreboard/users",
-        challenges: "challenges",
-        submissions: "submissions",
-      };
-
-      const data = await fetchData(endpoints[activeTab]);
-      if (data) {
-        switch (activeTab) {
-          case "users":
-            setUsers(data);
-            break;
-          case "teams":
-            setTeams(data);
-            break;
-          case "teamScoreboard":
-            setTeamScoreboard(data);
-            break;
-          case "userScoreboard":
-            setUserScoreboard(data);
-            break;
-          case "challenges":
-            setChallenges(data);
-            break;
-          case "submissions":
-            setSubmissions(data);
-            break;
-        }
+      let data;
+      switch (activeTab) {
+        case 'users':
+          data = await fetchData('users');
+          if (data?.items?.$values) setUsers(data.items.$values);
+          break;
+        case 'teams':
+          data = await fetchData('teams');
+          if (data?.items?.$values) setTeams(data.items.$values);
+          break;
+        case 'teamScoreboard':
+          data = await fetchData('scoreboard/teams');
+          if (data?.items?.$values) setTeamScoreboard(data.items.$values);
+          break;
+        case 'userScoreboard':
+          data = await fetchData('scoreboard/users');
+          if (data?.items?.$values) setUserScoreboard(data.items.$values);
+          break;
+        case 'challenges':
+          data = await fetchData('challenges');
+          if (data?.items?.$values) setChallenges(data.items.$values);
+          break;
+        case 'submissions':
+          data = await fetchData('submissions');
+          if (data?.items?.$values) setSubmissions(data.items.$values);
+          break;
       }
     };
 
@@ -290,8 +296,8 @@ function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {teams?.items?.length > 0 ? (
-                            teams.items.map((team) => (
+                          {teams?.length > 0 ? (
+                            teams.map((team) => (
                               <tr
                                 key={team.teamId}
                                 className="border-b border-gray-700"
@@ -303,9 +309,7 @@ function AdminDashboard() {
                                   {team.teamName}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
-                                  {new Date(
-                                    team.createdAt
-                                  ).toLocaleDateString()}
+                                  {new Date(team.createdAt).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-red-400">
                                   {team.totalPoints.toLocaleString()}
@@ -362,8 +366,8 @@ function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {teamScoreboard?.items?.length > 0 ? (
-                            teamScoreboard.items.map((team, index) => (
+                          {teamScoreboard?.length > 0 ? (
+                            teamScoreboard.map((team, index) => (
                               <tr
                                 key={index}
                                 className="border-b border-gray-700"
@@ -437,8 +441,8 @@ function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {userScoreboard?.items?.length > 0 ? (
-                            userScoreboard.items.map((user, index) => (
+                          {userScoreboard?.length > 0 ? (
+                            userScoreboard.map((user, index) => (
                               <tr
                                 key={index}
                                 className="border-b border-gray-700"
@@ -512,7 +516,7 @@ function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {users?.items?.length > 0 ? (
+                          {users?.length > 0 ? (
                             users.map((user) => (
                               <tr
                                 key={user.userId}
@@ -525,7 +529,7 @@ function AdminDashboard() {
                                   {user.email}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
-                                  {user.createdAt}
+                                  {new Date(user.createdAt).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-red-400">
                                   {user.totalSolves}
@@ -569,7 +573,7 @@ function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {challenges?.items?.length > 0 ? (
+                          {challenges?.length > 0 ? (
                             challenges.map((challenge) => (
                               <tr
                                 key={challenge.challengeId}

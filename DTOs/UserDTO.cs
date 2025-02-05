@@ -8,7 +8,7 @@ namespace CTF_Platform_dotnet.DTOs
         public string Username { get; set; }
         public string Email { get; set; }
         public RoleEnum Role { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public int Points { get; set; }
         public int TeamId { get; set; }
         public int TotalSolves { get; set; } = 0;
