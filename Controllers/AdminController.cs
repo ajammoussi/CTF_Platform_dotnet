@@ -140,9 +140,9 @@ namespace CTF_Platform_dotnet.Controllers{
 
                 var pagedSubmissions  = await _submissionRepository.GetPagedAsync(pageNumber, pageSize);
 
-                var submissions = _mapper.Map<List<SubmissionDto>>(pagedSubmissions.Items);
+                var submissions = _mapper.Map<List<SubmissionAdminDto>>(pagedSubmissions.Items);
 
-                var pagedResult = new PagedResponse<SubmissionDto>
+                var pagedResult = new PagedResponse<SubmissionAdminDto>
                 (
                     submissions.ToList(),
                     pageNumber,

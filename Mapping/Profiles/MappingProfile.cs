@@ -14,6 +14,7 @@ namespace CTF_Platform_dotnet.Mapping
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
                 .ForMember(dest => dest.Difficulty, opt => opt.MapFrom(src => src.Difficulty.ToString()));
             CreateMap<Submission, SubmissionDto>();
+            CreateMap<Submission, SubmissionAdminDto>();
             CreateMap<Team, TeamDto>();
             CreateMap<SupportTicket, TicketDto>();
 

@@ -35,14 +35,17 @@ function AdminDashboard() {
 
   const fetchData = async (endpoint, pageNumber = 1, pageSize = 10) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${API_BASE_URL}/${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -59,7 +62,7 @@ function AdminDashboard() {
   useEffect(() => {
     const loadDashboardData = async () => {
       // Fetch dashboard stats
-      const statsData = await fetchData('dashboard');
+      const statsData = await fetchData("dashboard");
       if (statsData) {
         setStats(statsData);
       }
@@ -67,28 +70,28 @@ function AdminDashboard() {
       // Fetch data based on active tab
       let data;
       switch (activeTab) {
-        case 'users':
-          data = await fetchData('users');
+        case "users":
+          data = await fetchData("users");
           if (data?.items?.$values) setUsers(data.items.$values);
           break;
-        case 'teams':
-          data = await fetchData('teams');
+        case "teams":
+          data = await fetchData("teams");
           if (data?.items?.$values) setTeams(data.items.$values);
           break;
-        case 'teamScoreboard':
-          data = await fetchData('scoreboard/teams');
+        case "teamScoreboard":
+          data = await fetchData("scoreboard/teams");
           if (data?.items?.$values) setTeamScoreboard(data.items.$values);
           break;
-        case 'userScoreboard':
-          data = await fetchData('scoreboard/users');
+        case "userScoreboard":
+          data = await fetchData("scoreboard/users");
           if (data?.items?.$values) setUserScoreboard(data.items.$values);
           break;
-        case 'challenges':
-          data = await fetchData('challenges');
+        case "challenges":
+          data = await fetchData("challenges");
           if (data?.items?.$values) setChallenges(data.items.$values);
           break;
-        case 'submissions':
-          data = await fetchData('submissions');
+        case "submissions":
+          data = await fetchData("submissions");
           if (data?.items?.$values) setSubmissions(data.items.$values);
           break;
       }
@@ -309,7 +312,9 @@ function AdminDashboard() {
                                   {team.teamName}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
-                                  {new Date(team.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    team.createdAt
+                                  ).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-red-400">
                                   {team.totalPoints.toLocaleString()}
@@ -529,7 +534,9 @@ function AdminDashboard() {
                                   {user.email}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
-                                  {new Date(user.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    user.createdAt
+                                  ).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-red-400">
                                   {user.totalSolves}
@@ -626,52 +633,69 @@ function AdminDashboard() {
                         <thead>
                           <tr className="border-b border-red-500">
                             <th className="px-6 py-3 text-left text-xs font-mono text-red-400">
-                              Username
+                              Submission Id
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-mono text-red-400">
-                              Challenge
+                              Challenge Id
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-mono text-red-400">
+                              Submitted Flag
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-mono text-red-400">
+                              Submitted At
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-mono text-red-400">
                               Status
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-mono text-red-400">
-                              Timestamp
-                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {submissions.map((submission) => (
-                            <tr
-                              key={submission.id}
-                              className="border-b border-gray-700"
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap font-mono text-white">
-                                {submission.username}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
-                                {submission.challenge}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span
-                                  className={`flex items-center ${
-                                    submission.status === "correct"
-                                      ? "text-green-500"
-                                      : "text-red-500"
-                                  }`}
-                                >
-                                  {submission.status === "correct" ? (
-                                    <CheckCircleIcon className="h-5 w-5 mr-1" />
-                                  ) : (
-                                    <XCircleIcon className="h-5 w-5 mr-1" />
-                                  )}
-                                  {submission.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
-                                {submission.timestamp}
+                          {submissions?.length > 0 ? (
+                            submissions.map((submission) => (
+                              <tr
+                                key={submission.submissionId}
+                                className="border-b border-gray-700"
+                              >
+                                <td className="px-6 py-4 whitespace-nowrap font-mono text-white">
+                                  {submission.submissionId}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap font-mono text-white">
+                                  {submission.challengeId}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
+                                  {submission.submittedFlag}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-300">
+                                  {submission.submittedAt}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span
+                                    className={`flex items-center ${
+                                      submission.isCorrect === true
+                                        ? "text-green-500"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {submission.isCorrect === true ? (
+                                      <CheckCircleIcon className="h-5 w-5 mr-1" />
+                                    ) : (
+                                      <XCircleIcon className="h-5 w-5 mr-1" />
+                                    )}
+                                    {submission.isCorrect}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan="5"
+                                className="px-6 py-4 text-center font-mono text-gray-400"
+                              >
+                                No submissions found
                               </td>
                             </tr>
-                          ))}
+                          )}
                         </tbody>
                       </table>
                     </div>
