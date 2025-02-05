@@ -76,7 +76,7 @@ namespace CTF_Platform_dotnet.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] CreateChallengeDto updateDto)
         {
             if (!ModelState.IsValid)
-            {
+            {   
                 return BadRequest(ModelState);
             }
 

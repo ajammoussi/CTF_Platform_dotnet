@@ -24,6 +24,9 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 // Configuration of services
+
+builder.Services.AddCors();
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtSettings>>().Value);
 
@@ -134,6 +137,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(options =>
+{
+    options.WithOrigins("http://localhost:3000")  // Your React app URL
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .AllowCredentials();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

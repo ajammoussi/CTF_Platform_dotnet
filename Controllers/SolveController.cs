@@ -34,7 +34,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "Participant")]
+        [Authorize(Policy = "ParticipantOnly")]
         public async Task<IActionResult> SubmitSolution([FromBody] SubmissionDto submissionDto)
         {
             var user = await GetCurrentUserAsync();
@@ -83,7 +83,6 @@ namespace CTF_Platform_dotnet.Controllers
             submission.TeamId = user.TeamId ?? throw new InvalidOperationException("User's TeamId is null.");
             submission.SubmittedAt = System.DateTime.UtcNow;
             submission.IsCorrect = isCorrect;
-
 
             // Save the new submission
             await _submissionRepository.AddAsync(submission);
