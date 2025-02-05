@@ -1,155 +1,226 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon, TrophyIcon, InformationCircleIcon, UserCircleIcon } from '@heroicons/react/24/outline';
-import { ROUTES } from '../routes';
-import SignInModal from './Auth/SignInModal';
-import SignUpModal from './Auth/SignUpModal';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon,
+  UsersIcon,
+  UserPlusIcon,
+} from '@heroicons/react/24/outline';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
-  const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showTeamDropdown, setShowTeamDropdown] = useState(false);
+  const navigate = useNavigate();
 
-  const isActive = (path) => {
-    return location.pathname === path ? 'bg-gray-700' : '';
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    setIsLoggedIn(!!token);
+    setIsAdmin(role === 'Admin');
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      
+      const response = await fetch('https://localhost:7226/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          token: token,
+          userId: parseInt(userId)
+        })
+      });
+
+      if (response.ok) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        localStorage.removeItem('username');
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        navigate('/');
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
-  const navItems = [
-    { path: ROUTES.HOME, label: 'Home' },
-    { path: ROUTES.EVENTS, label: 'Events' },
-    { path: ROUTES.LEADERBOARD, label: 'Leaderboard', icon: TrophyIcon },
-    { path: ROUTES.ABOUT, label: 'About', icon: InformationCircleIcon },
-  ];
-
-  const handleSignInClick = () => {
-    setShowSignIn(true);
-    setIsOpen(false);
-  };
-
-  const handleSignUpClick = () => {
-    setShowSignUp(true);
-    setIsOpen(false);
-  };
-
-  const switchToSignUp = () => {
-    setShowSignIn(false);
-    setShowSignUp(true);
-  };
-
-  const switchToSignIn = () => {
-    setShowSignUp(false);
-    setShowSignIn(true);
-  };
+  const TeamDropdown = () => (
+    <div className="relative">
+      <button
+        onClick={() => setShowTeamDropdown(!showTeamDropdown)}
+        className="flex items-center space-x-2 text-gray-300 hover:text-white"
+      >
+        <UsersIcon className="h-6 w-6" />
+        <span>Team</span>
+      </button>
+      {showTeamDropdown && (
+        <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10">
+          <Link
+            to="/create-team"
+            className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center"
+            onClick={() => setShowTeamDropdown(false)}
+          >
+            <UsersIcon className="h-5 w-5 mr-2" />
+            Create Team
+          </Link>
+          <Link
+            to="/invite-team"
+            className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center"
+            onClick={() => setShowTeamDropdown(false)}
+          >
+            <UserPlusIcon className="h-5 w-5 mr-2" />
+            Invite Member
+          </Link>
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <>
-      <nav className="bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex-shrink-0">
-              <Link to={ROUTES.HOME} className="flex items-center">
-                <span className="text-2xl font-bold text-green-500">{'{CTF}'}</span>
-                <span className="ml-2 text-xl font-semibold text-white">CyberChallenge</span>
-              </Link>
-            </div>
-            
-            {/* Desktop menu */}
-            <div className="hidden md:flex md:items-center md:space-x-4">
-              {navItems.map((item) => (
-                <Link 
-                  key={item.path}
-                  to={item.path}
-                  className={`px-3 py-2 rounded-md text-sm font-mono text-white hover:bg-gray-700 flex items-center ${isActive(item.path)}`}
-                >
-                  {item.icon && <item.icon className="h-4 w-4 mr-1" />}
-                  {`> ${item.label}`}
+    <nav className="bg-gray-900 border-b border-green-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and main nav links */}
+          <div className="flex items-center">
+            <Link to="/" className="text-green-500 font-bold text-xl font-mono">
+              CTF Platform
+            </Link>
+            {isLoggedIn && (
+              <div className="hidden md:flex ml-10 space-x-8">
+                <Link to="/challenges" className="text-gray-300 hover:text-white">
+                  Challenges
                 </Link>
-              ))}
-              
-              {/* Auth buttons */}
-              <div className="flex items-center space-x-2 ml-4">
-                <button
-                  onClick={handleSignInClick}
-                  className="px-3 py-2 rounded-md text-sm font-mono text-white hover:bg-gray-700 flex items-center"
-                >
-                  <UserCircleIcon className="h-4 w-4 mr-1" />
-                  {'> Sign_In'}
-                </button>
-                <button
-                  onClick={handleSignUpClick}
-                  className="px-3 py-2 rounded-md text-sm font-mono bg-green-500 text-black hover:bg-green-400"
-                >
-                  {'> Sign_Up'}
-                </button>
+                <Link to="/leaderboard" className="text-gray-300 hover:text-white">
+                  Leaderboard
+                </Link>
+                <Link to="/about" className="text-gray-300 hover:text-white">
+                  About
+                </Link>
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none"
-              >
-                {isOpen ? (
-                  <XMarkIcon className="block h-6 w-6" />
-                ) : (
-                  <Bars3Icon className="block h-6 w-6" />
+          {/* Right side nav items */}
+          <div className="hidden md:flex items-center space-x-8">
+            {isLoggedIn ? (
+              <>
+                <TeamDropdown />
+                {isAdmin && (
+                  <Link to="/adminDashboard" className="text-gray-300 hover:text-white flex items-center">
+                    <UserCircleIcon className="h-6 w-6 mr-1" />
+                    Admin
+                  </Link>
                 )}
-              </button>
-            </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-300 hover:text-white flex items-center"
+                >
+                  <ArrowRightOnRectangleIcon className="h-6 w-6 mr-1" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="text-gray-300 hover:text-white flex items-center"
+              >
+                <ArrowRightOnRectangleIcon className="h-6 w-6 mr-1" />
+                Login
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-300 hover:text-white"
+            >
+              {isOpen ? (
+                <XMarkIcon className="h-6 w-6" />
+              ) : (
+                <Bars3Icon className="h-6 w-6" />
+              )}
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile menu */}
-        {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {navItems.map((item) => (
+      {/* Mobile menu */}
+      {isOpen && (
+        <div className="md:hidden bg-gray-800">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            {isLoggedIn ? (
+              <>
                 <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block px-3 py-2 rounded-md text-base font-mono text-white hover:bg-gray-700 flex items-center ${isActive(item.path)}`}
-                  onClick={() => setIsOpen(false)}
+                  to="/challenges"
+                  className="block px-3 py-2 text-gray-300 hover:text-white"
                 >
-                  {item.icon && <item.icon className="h-4 w-4 mr-1" />}
-                  {`> ${item.label}`}
+                  Challenges
                 </Link>
-              ))}
-              
-              {/* Mobile auth buttons */}
-              <button
-                onClick={handleSignInClick}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-mono text-white hover:bg-gray-700 flex items-center"
+                <Link
+                  to="/leaderboard"
+                  className="block px-3 py-2 text-gray-300 hover:text-white"
+                >
+                  Leaderboard
+                </Link>
+                <Link
+                  to="/about"
+                  className="block px-3 py-2 text-gray-300 hover:text-white"
+                >
+                  About
+                </Link>
+                <Link
+                  to="/create-team"
+                  className="block px-3 py-2 text-gray-300 hover:text-white"
+                >
+                  Create Team
+                </Link>
+                <Link
+                  to="/invite-team"
+                  className="block px-3 py-2 text-gray-300 hover:text-white"
+                >
+                  Invite to Team
+                </Link>
+                {isAdmin && (
+                  <Link
+                    to="/adminDashboard"
+                    className="block px-3 py-2 text-gray-300 hover:text-white"
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-3 py-2 text-gray-300 hover:text-white"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="block px-3 py-2 text-gray-300 hover:text-white"
               >
-                <UserCircleIcon className="h-4 w-4 mr-1" />
-                {'> Sign_In'}
-              </button>
-              <button
-                onClick={handleSignUpClick}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-mono bg-green-500 text-black hover:bg-green-400"
-              >
-                {'> Sign_Up'}
-              </button>
-            </div>
+                Login
+              </Link>
+            )}
           </div>
-        )}
-      </nav>
-
-      {/* Auth Modals */}
-      {showSignIn && (
-        <SignInModal
-          onClose={() => setShowSignIn(false)}
-          onSwitchToSignUp={switchToSignUp}
-        />
+        </div>
       )}
-      {showSignUp && (
-        <SignUpModal
-          onClose={() => setShowSignUp(false)}
-          onSwitchToSignIn={switchToSignIn}
-        />
-      )}
-    </>
+    </nav>
   );
 }
 
