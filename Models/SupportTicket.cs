@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CTF_Platform_dotnet.Models
 {
     public class SupportTicket
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TicketId { get; set; }
 
         [Required]
@@ -12,15 +14,15 @@ namespace CTF_Platform_dotnet.Models
 
         [Required]
         [MaxLength(255)]
-        public string Subject { get; set; }
+        public required string Subject { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsResolved { get; set; } = false;
 
         // Navigation properties
-        public User User { get; set; }
+        public required User User { get; set; }
     }
 }

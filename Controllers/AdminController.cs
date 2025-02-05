@@ -6,8 +6,10 @@ using CTF_Platform_dotnet.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
 using CTF_Platform_dotnet.DTOs;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CTF_Platform_dotnet.Controllers{
+    [Authorize(Policy = "AdminOnly")]
     [Route("api/admin")]
     [ApiController]
     public class AdminController : ControllerBase 

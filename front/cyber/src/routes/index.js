@@ -3,15 +3,15 @@ import Layout from '../components/Layout';
 import LandingPage from '../components/LandingPage';
 import EventsPage from '../components/EventsPage';
 import Leaderboard from '../components/Leaderboard';
-import ChallengeDetails from '../components/ChallengeDetails';
+import ChallengesDetails from '../components/ChallengesDetails';
 import About from '../components/About';
 import AdminDashboard from '../components/AdminDashboard';
 
 export const ROUTES = {
   HOME: '/',
-  EVENTS: '/events',
+  EVENTS: '/Challenges',
   LEADERBOARD: '/leaderboard',
-  CHALLENGE: '/challenge/:id',
+  CHALLENGES: '/challenge/:id',
   ABOUT: '/about',
   ADMIN: '/adminDashboard',
 };
@@ -34,8 +34,8 @@ export const router = createBrowserRouter([
         element: <Leaderboard />,
       },
       {
-        path: ROUTES.CHALLENGE,
-        element: <ChallengeDetails />,
+        path: ROUTES.CHALLENGES,
+        element: <ChallengesDetails />,
       },
       {
         path: ROUTES.ABOUT,

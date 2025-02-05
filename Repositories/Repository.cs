@@ -31,9 +31,8 @@ public class Repository<T> : IRepository<T> where T : class
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(T entity)
     {
-        var entity = await GetByIdAsync(id);
         if (entity != null)
         {
             _dbSet.Remove(entity);
@@ -78,5 +77,6 @@ public class Repository<T> : IRepository<T> where T : class
     {
         return await _dbSet.AnyAsync(predicate);
     }
+
 
 }
