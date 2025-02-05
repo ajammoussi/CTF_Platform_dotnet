@@ -11,7 +11,7 @@ namespace CTF_Platform_dotnet.Services
         Task<User> GetUserByIdAsync(int id);
         Task AddUserAsync(User user);
         Task UpdateUserAsync(User user);
-        Task DeleteUserAsync(int id);
+        Task DeleteUserAsync(User user);
         Task<IEnumerable<User>> GetUsersByPredicateAsync(Expression<Func<User, bool>> predicate);
         Task<IEnumerable<User>> GetUsersOrderedAsync<TKey>(Expression<Func<User, TKey>> keySelector, bool ascending = true);
         Task<IEnumerable<User>> GetPagedUsersAsync(int pageNumber, int pageSize);

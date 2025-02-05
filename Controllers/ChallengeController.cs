@@ -3,6 +3,7 @@ using CTF_Platform_dotnet.Models;
 using Microsoft.AspNetCore.Mvc;
 using CTF_Platform_dotnet.Repositories;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CTF_Platform_dotnet.Controllers
 {
@@ -22,6 +23,7 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         // GET: api/challenges
+        [Authorize(Policy = "ParticipantOrAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -44,7 +46,7 @@ namespace CTF_Platform_dotnet.Controllers
             var challenge = await _challengeRepository.GetByIdAsync(id);
             if (challenge == null)
             {
-                return NotFound();
+                return NotFound("This Challenge is not found.");
             }
             return Ok(_mapper.Map<ChallengeDto>(challenge));
         }
@@ -78,12 +80,12 @@ namespace CTF_Platform_dotnet.Controllers
             var challenge = await _challengeRepository.GetByIdAsync(id);
             if (challenge == null)
             {
-                return NotFound();
+                return NotFound("This Challenge is not found.");
             }
 
             _mapper.Map(updateDto, challenge);
             await _challengeRepository.UpdateAsync(challenge);
-            return NoContent();
+            return Ok("The challenge has been changed.");
         }
 
         // DELETE: api/challenges/5
@@ -93,12 +95,12 @@ namespace CTF_Platform_dotnet.Controllers
             var challenge = await _challengeRepository.GetByIdAsync(id);
             if (challenge == null)
             {
-                return NotFound();
+                return NotFound("This Challenge is not found.");
             }
 
             await _challengeRepository.DeleteAsync(challenge);
 
-            return NoContent();
+            return Ok("The challenge has been deleted.");
         }
     }
 }

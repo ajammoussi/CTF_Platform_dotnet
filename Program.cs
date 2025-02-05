@@ -7,15 +7,11 @@ using Microsoft.OpenApi.Models;
 using SendGrid;
 using System.Text;
 using CTF_Platform_dotnet.Auth;
-using CTF_Platform_dotnet.Repositories;
 using CTF_Platform_dotnet.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
-using CTF_Platform_dotnet.Services.EmailSender;
-using SendGrid;
 using CTF_Platform_dotnet.Services.Generic;
 using static CTF_Platform_dotnet.Services.Generic.IService;
 
@@ -47,9 +43,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 // Register the TeamService
 builder.Services.AddScoped<ITeamService, TeamService>();
-
-// for submission repository dependency injection
-builder.Services.AddScoped<IRepository<Submission>, SubmissionRepository>();
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -92,6 +85,10 @@ builder.Services.AddAuthorization(options =>
     // Policy for challenge creators
     options.AddPolicy("ChallengeCreatorOnly", policy =>
         policy.RequireClaim("Role", "ChallengeCreator"));
+
+    // Policy for participants and admins
+    options.AddPolicy("ParticipantOrAdmin", policy =>
+        policy.RequireClaim("Role", "Participant", "Admin"));
 });
 
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();

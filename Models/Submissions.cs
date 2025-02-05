@@ -1,18 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CTF_Platform_dotnet.Models
 {
     public class Submission
     {
         [Key]
-        public int SubmissionId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public required int SubmissionId { get; set; }
 
         [Required]
-        public int ChallengeId { get; set; }
+        public required int ChallengeId { get; set; }
 
-        public int UserId { get; set; } 
+        public required int UserId { get; set; } 
 
-        public int TeamId { get; set; }
+        public required int TeamId { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -20,7 +22,7 @@ namespace CTF_Platform_dotnet.Models
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
-        public bool? IsCorrect { get; set; }
+        public required bool IsCorrect { get; set; }
 
         // Navigation properties
         public Challenge Challenge { get; set; }

@@ -35,9 +35,9 @@ namespace CTF_Platform_dotnet.Services
             await _teamRepository.UpdateAsync(team);
         }
 
-        public async Task DeleteTeamAsync(int id)
+        public async Task DeleteTeamAsync(Team team)
         {
-            await _teamRepository.DeleteAsync(id);
+            await _teamRepository.DeleteAsync(team);
         }
 
         public async Task<IEnumerable<Team>> GetTeamsByPredicateAsync(Expression<Func<Team, bool>> predicate)

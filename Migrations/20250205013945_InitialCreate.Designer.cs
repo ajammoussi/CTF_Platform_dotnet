@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CTF_Platform_dotnet.Migrations
 {
     [DbContext(typeof(CTFContext))]
-    [Migration("20250202181552_InitialCreate")]
+    [Migration("20250205013945_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -71,6 +71,33 @@ namespace CTF_Platform_dotnet.Migrations
                     b.ToTable("Challenges");
                 });
 
+            modelBuilder.Entity("CTF_Platform_dotnet.Models.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Invitations");
+                });
+
             modelBuilder.Entity("CTF_Platform_dotnet.Models.Submission", b =>
                 {
                     b.Property<int>("SubmissionId")
@@ -82,7 +109,7 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<int>("ChallengeId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsCorrect")
+                    b.Property<bool>("IsCorrect")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("SubmittedAt")
@@ -93,10 +120,10 @@ namespace CTF_Platform_dotnet.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int?>("TeamId")
+                    b.Property<int>("TeamId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("SubmissionId");
@@ -122,7 +149,6 @@ namespace CTF_Platform_dotnet.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsResolved")
@@ -154,8 +180,14 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("CreatedByUserId")
+                    b.Property<int?>("CreatedByUserId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ResetToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ResetTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TeamName")
                         .IsRequired()
@@ -180,13 +212,19 @@ namespace CTF_Platform_dotnet.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("LoginToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LoginTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -196,10 +234,16 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<int>("Points")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ResetToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ResetTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Username")
@@ -214,7 +258,21 @@ namespace CTF_Platform_dotnet.Migrations
 
                     b.HasIndex("TeamId");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CTF_Platform_dotnet.Models.Invitation", b =>
+                {
+                    b.HasOne("CTF_Platform_dotnet.Models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("CTF_Platform_dotnet.Models.Submission", b =>
@@ -227,11 +285,15 @@ namespace CTF_Platform_dotnet.Migrations
 
                     b.HasOne("CTF_Platform_dotnet.Models.Team", "Team")
                         .WithMany("Submissions")
-                        .HasForeignKey("TeamId");
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CTF_Platform_dotnet.Models.User", "User")
                         .WithMany("Submissions")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Challenge");
 
@@ -255,9 +317,7 @@ namespace CTF_Platform_dotnet.Migrations
                 {
                     b.HasOne("CTF_Platform_dotnet.Models.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CreatedByUserId");
 
                     b.Navigation("CreatedByUser");
                 });
@@ -266,9 +326,7 @@ namespace CTF_Platform_dotnet.Migrations
                 {
                     b.HasOne("CTF_Platform_dotnet.Models.Team", "Team")
                         .WithMany("Users")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TeamId");
 
                     b.Navigation("Team");
                 });

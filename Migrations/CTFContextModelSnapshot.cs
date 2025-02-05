@@ -106,7 +106,7 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<int>("ChallengeId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsCorrect")
+                    b.Property<bool>("IsCorrect")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("SubmittedAt")

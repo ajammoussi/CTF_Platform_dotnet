@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CTF_Platform_dotnet.Migrations
 {
     [DbContext(typeof(CTFContext))]
-    [Migration("20250204214413_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250205014011_SeedData-DONOTDELETE")]
+    partial class SeedDataDONOTDELETE
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,7 +109,7 @@ namespace CTF_Platform_dotnet.Migrations
                     b.Property<int>("ChallengeId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsCorrect")
+                    b.Property<bool>("IsCorrect")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("SubmittedAt")

@@ -23,7 +23,7 @@ namespace CTF_Platform_dotnet.Services.Generic
             Task UpdateAsync(T entity);
 
             // Delete an entity by ID
-            Task DeleteAsync(int id);
+            Task DeleteAsync(T entity);
 
             // Get entities based on a predicate (filter)
             Task<IEnumerable<T>> GetByPredicateAsync(Expression<Func<T, bool>> predicate);

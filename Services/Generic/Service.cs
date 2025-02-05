@@ -34,9 +34,9 @@ namespace CTF_Platform_dotnet.Services.Generic
             await _repository.UpdateAsync(entity);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(T entity)
         {
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteAsync(entity);
         }
 
         public async Task<IEnumerable<T>> GetByPredicateAsync(Expression<Func<T, bool>> predicate)

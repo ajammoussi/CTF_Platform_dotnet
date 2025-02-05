@@ -34,17 +34,32 @@ namespace CTF_Platform_dotnet.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Invitations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TeamId = table.Column<int>(type: "integer", nullable: false),
+                    UserEmail = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invitations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Submissions",
                 columns: table => new
                 {
                     SubmissionId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ChallengeId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: true),
-                    TeamId = table.Column<int>(type: "integer", nullable: true),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    TeamId = table.Column<int>(type: "integer", nullable: false),
                     SubmittedFlag = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     SubmittedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsCorrect = table.Column<bool>(type: "boolean", nullable: true)
+                    IsCorrect = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,7 +80,7 @@ namespace CTF_Platform_dotnet.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Subject = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsResolved = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -81,9 +96,11 @@ namespace CTF_Platform_dotnet.Migrations
                     TeamId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     TeamName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedByUserId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TotalPoints = table.Column<int>(type: "integer", nullable: false)
+                    TotalPoints = table.Column<int>(type: "integer", nullable: false),
+                    ResetToken = table.Column<string>(type: "text", nullable: true),
+                    ResetTokenExpiry = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -100,9 +117,13 @@ namespace CTF_Platform_dotnet.Migrations
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Points = table.Column<int>(type: "integer", nullable: false),
-                    TeamId = table.Column<int>(type: "integer", nullable: false)
+                    TeamId = table.Column<int>(type: "integer", nullable: true),
+                    LoginToken = table.Column<string>(type: "text", nullable: true),
+                    LoginTokenExpiry = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ResetToken = table.Column<string>(type: "text", nullable: true),
+                    ResetTokenExpiry = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -111,9 +132,13 @@ namespace CTF_Platform_dotnet.Migrations
                         name: "FK_Users_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
-                        principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "TeamId");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invitations_TeamId",
+                table: "Invitations",
+                column: "TeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Submissions_ChallengeId",
@@ -151,19 +176,35 @@ namespace CTF_Platform_dotnet.Migrations
                 table: "Users",
                 column: "TeamId");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username",
+                unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Invitations_Teams_TeamId",
+                table: "Invitations",
+                column: "TeamId",
+                principalTable: "Teams",
+                principalColumn: "TeamId",
+                onDelete: ReferentialAction.Cascade);
+
             migrationBuilder.AddForeignKey(
                 name: "FK_Submissions_Teams_TeamId",
                 table: "Submissions",
                 column: "TeamId",
                 principalTable: "Teams",
-                principalColumn: "TeamId");
+                principalColumn: "TeamId",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Submissions_Users_UserId",
                 table: "Submissions",
                 column: "UserId",
                 principalTable: "Users",
-                principalColumn: "UserId");
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_SupportTickets_Users_UserId",
@@ -178,8 +219,7 @@ namespace CTF_Platform_dotnet.Migrations
                 table: "Teams",
                 column: "CreatedByUserId",
                 principalTable: "Users",
-                principalColumn: "UserId",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "UserId");
         }
 
         /// <inheritdoc />
@@ -188,6 +228,9 @@ namespace CTF_Platform_dotnet.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Users_Teams_TeamId",
                 table: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Invitations");
 
             migrationBuilder.DropTable(
                 name: "Submissions");

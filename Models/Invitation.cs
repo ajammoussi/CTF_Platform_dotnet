@@ -6,6 +6,7 @@ namespace CTF_Platform_dotnet.Models
     public class Invitation
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
         [Required]

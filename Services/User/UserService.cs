@@ -40,9 +40,9 @@ namespace CTF_Platform_dotnet.Services
             await _userRepository.UpdateAsync(user);
         }
 
-        public async Task DeleteUserAsync(int id)
+        public async Task DeleteUserAsync(User user)
         {
-            await _userRepository.DeleteAsync(id);
+            await _userRepository.DeleteAsync(user);
         }
 
         public async Task<IEnumerable<User>> GetUsersByPredicateAsync(Expression<Func<User, bool>> predicate)

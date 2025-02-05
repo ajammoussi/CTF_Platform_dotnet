@@ -9,7 +9,7 @@ namespace CTF_Platform_dotnet.Services
         Task<Team> GetTeamByIdAsync(int id);
         Task AddTeamAsync(Team team);
         Task UpdateTeamAsync(Team team);
-        Task DeleteTeamAsync(int id);
+        Task DeleteTeamAsync(Team team);
         Task<IEnumerable<Team>> GetTeamsByPredicateAsync(Expression<Func<Team, bool>> predicate);
         Task<IEnumerable<Team>> GetTeamsOrderedAsync<TKey>(Expression<Func<Team, TKey>> keySelector, bool ascending = true);
         Task<IEnumerable<Team>> GetPagedTeamsAsync(int pageNumber, int pageSize);
