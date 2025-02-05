@@ -238,7 +238,7 @@ namespace CTF_Platform_dotnet.Controllers
             await _userService.UpdateUserAsync(user);
 
             // Send the reset token via email
-            var resetLink = $"{_configuration["Frontend:BaseUrl"]}/reset-password?token={resetToken}";
+            var resetLink = $"{_configuration["Frontend:BaseUrl"]}reset-password?token={resetToken}";
             var emailSubject = "Password Reset Request";
             var emailBody = $"Please reset your password by clicking <a href='{resetLink}'>here</a>.";
 

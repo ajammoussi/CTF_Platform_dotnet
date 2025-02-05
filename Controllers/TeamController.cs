@@ -85,8 +85,8 @@ namespace CTF_Platform_dotnet.Controllers
         }
 
         [Authorize(Policy = "ParticipantOnly")]
-        [HttpPost("create-invitation/{id}")]
-        public async Task<IActionResult> CreateInvitation(string id)
+        [HttpPost("create-invitation/{email}")]
+        public async Task<IActionResult> CreateInvitation(string email)
         {
             // Fetch the current user
             var currentUser = await GetCurrentUserAsync();
@@ -96,14 +96,8 @@ namespace CTF_Platform_dotnet.Controllers
             if (team == null)
                 return NotFound("Team not found");
 
-            // Convert the id parameter to an int
-            if (!int.TryParse(id, out int userId))
-            {
-                return BadRequest("Invalid user ID format.");
-            }
-
-            // Fetch the user to whom the invitation is being sent
-            var userToInvite = await _context.Users.FindAsync(userId); // <-- Now using int
+            // Fetch the user to whom the invitation is being sent using email
+            var userToInvite = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (userToInvite == null)
                 return NotFound("User not found");
 
@@ -131,6 +125,7 @@ namespace CTF_Platform_dotnet.Controllers
 
             return Ok(new { message = "Invitation sent" });
         }
+
 
         [Authorize(Policy = "ParticipantOnly")]
         [HttpPost("accept-invitation/{token}")]
